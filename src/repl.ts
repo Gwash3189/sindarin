@@ -25,7 +25,7 @@ export class REPL {
         break;
       }
       default:
-        console.log("=>", result)
+        console.log("=>", result);
         break;
     }
   }

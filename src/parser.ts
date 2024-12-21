@@ -83,7 +83,7 @@ export class Parser {
       // Parse key
       const key = this.parseExpression();
       if (!this.peek()) {
-        throw new ParseError('Unexpected end of hash map');
+        throw new ParseError("Unexpected end of hash map");
       }
 
       // Parse value
@@ -94,18 +94,18 @@ export class Parser {
     }
 
     if (!this.peek() || this.peek()!.type !== TokenType.HASH_END) {
-      throw new ParseError('Unterminated hash map');
+      throw new ParseError("Unterminated hash map");
     }
 
     // Consume the }
     this.consume();
 
     return createList([
-      createSymbol('make-hash'),
+      createSymbol("make-hash"),
       createList([
-        createSymbol('list'),
-        ...pairs
-      ])
+        createSymbol("list"),
+        ...pairs,
+      ]),
     ]);
   }
 

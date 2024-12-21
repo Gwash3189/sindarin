@@ -1,6 +1,11 @@
 import { beforeEach, describe, it } from "jsr:@std/testing/bdd";
 import { expect } from "jsr:@std/expect";
-import { createList, createNull, createNumber, createString } from "../src/types.ts";
+import {
+  createList,
+  createNull,
+  createNumber,
+  createString,
+} from "../src/types.ts";
 import { ParenSaurus } from "../src/mod.ts";
 import { tokenize } from "../src/tokeniser.ts";
 import { parse } from "../src/parser.ts";
@@ -119,19 +124,29 @@ describe("ParenSaurus Integration Tests", () => {
     describe("when defining a hash", () => {
       it("assigns the hash to a variable", () => {
         lisp.evaluate('(define person #{ :name "John" })');
-        expect(lisp.evaluate('person')).toBeTruthy();
+        expect(lisp.evaluate("person")).toBeTruthy();
       });
 
       it("allows multiple key-value pairs", () => {
-        lisp.evaluate('(define person #{ :name "John" :age 30 :city "New York" })');
-        expect(lisp.evaluate('(hash-get person :name)')).toEqual(createString("John"));
-        expect(lisp.evaluate('(hash-get person :age)')).toEqual(createNumber(30));
-        expect(lisp.evaluate('(hash-get person :city)')).toEqual(createString("New York"));
+        lisp.evaluate(
+          '(define person #{ :name "John" :age 30 :city "New York" })',
+        );
+        expect(lisp.evaluate("(hash-get person :name)")).toEqual(
+          createString("John"),
+        );
+        expect(lisp.evaluate("(hash-get person :age)")).toEqual(
+          createNumber(30),
+        );
+        expect(lisp.evaluate("(hash-get person :city)")).toEqual(
+          createString("New York"),
+        );
       });
 
       it("returns null for non-existent keys", () => {
         lisp.evaluate('(define person #{ :name "John" })');
-        expect(lisp.evaluate('(hash-get person :unknown)')).toEqual(createNull());
+        expect(lisp.evaluate("(hash-get person :unknown)")).toEqual(
+          createNull(),
+        );
       });
 
       it("can be nested", () => {
@@ -144,7 +159,7 @@ describe("ParenSaurus Integration Tests", () => {
             }
           })
         `);
-        expect(lisp.evaluate('(hash-get (hash-get person :address) :city)'))
+        expect(lisp.evaluate("(hash-get (hash-get person :address) :city)"))
           .toEqual(createString("New York"));
       });
     });

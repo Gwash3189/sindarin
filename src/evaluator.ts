@@ -145,8 +145,8 @@ export class Evaluator {
   }
 
   private evaluteDefineModule(args: LispVal[], env: Environment): LispVal {
-    console.log(args)
-    return createNull()
+    console.log(args);
+    return createNull();
   }
 
   private evaluateDefine(args: LispVal[], env: Environment): LispVal {
@@ -427,31 +427,38 @@ export function createGlobalEnv(): Environment {
     }),
   );
 
-  env.set('make-hash', createFunction((...args: LispVal[]): LispVal => {
-    const hash = new Map<string, LispVal>();
+  env.set(
+    "make-hash",
+    createFunction((...args: LispVal[]): LispVal => {
+      const hash = new Map<string, LispVal>();
 
-    // args should be a single list containing pairs of key-value
-    const pairs = args[0];
-    if (!isList(pairs)) {
-      throw new EvalError('make-hash requires a list of key-value pairs');
-    }
-
-    // Process pairs in twos
-    const elements = pairs.value as LispVal[];
-    for (let i = 0; i < elements.length; i += 2) {
-      const key = elements[i];
-      const value = elements[i + 1];
-
-      if (!key || !value) {
-        throw new EvalError('Hash requires an even number of key-value elements');
+      // args should be a single list containing pairs of key-value
+      const pairs = args[0];
+      if (!isList(pairs)) {
+        throw new EvalError("make-hash requires a list of key-value pairs");
       }
 
-      const keyStr = key.type === 'keyword' ? key.value as string : String(key.value);
-      hash.set(keyStr, value);
-    }
+      // Process pairs in twos
+      const elements = pairs.value as LispVal[];
+      for (let i = 0; i < elements.length; i += 2) {
+        const key = elements[i];
+        const value = elements[i + 1];
 
-    return createHash(hash);
-  }));
+        if (!key || !value) {
+          throw new EvalError(
+            "Hash requires an even number of key-value elements",
+          );
+        }
+
+        const keyStr = key.type === "keyword"
+          ? key.value as string
+          : String(key.value);
+        hash.set(keyStr, value);
+      }
+
+      return createHash(hash);
+    }),
+  );
 
   // Add hash accessor functions too
   env.set(
