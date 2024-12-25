@@ -1,13 +1,20 @@
+import { LispFunc } from "./lisp.ts";
+import { Parser } from "./parser.ts";
+import { tokenize } from "./tokeniser.ts";
 import {
   createBoolean,
+  createError,
   createFunction,
   createHash,
+  createLambdaSymbol,
   createList,
   createNull,
   createNumber,
+  createString,
   createSymbol,
   EvalError,
   isBoolean,
+  isError,
   isFunction,
   isKeyword,
   isList,
@@ -16,7 +23,9 @@ import {
   isSymbol,
   LispExport,
   LispFunction,
+  LispType,
   LispVal,
+  LispValue,
 } from "./types.ts";
 
 // Environment class
@@ -29,13 +38,15 @@ export class Environment {
     this.parent = parent;
   }
 
-  get(name: string): LispVal {
-    const symbol = this.vars.get(name);
-    if (symbol !== undefined) {
-      return symbol;
-    }
-    if (this.parent !== null) {
-      return this.parent.get(name);
+  get<T = LispVal>(name: string): T {
+    let current: Environment | null = this;
+
+    while (current !== null) {
+      const value = current.vars.get(name);
+      if (value !== undefined) {
+        return value as T;
+      }
+      current = current.parent;
     }
     throw new EvalError(`Undefined symbol: ${name}`);
   }
@@ -43,6 +54,11 @@ export class Environment {
   set(name: string, value: LispVal): LispVal {
     this.vars.set(name, value);
     return value;
+  }
+
+  has(name: string): boolean {
+    return this.vars.has(name) ||
+      (this.parent !== null && this.parent.has(name));
   }
 
   defineModule(name: string, exports: LispExport): void {
@@ -90,38 +106,74 @@ export class Evaluator {
         switch (first.value) {
           case "quote":
             return this.evaluateQuote(rest);
-
           case "if":
             return this.evaluateIf(rest, env);
-
+          case "def":
           case "define":
             return this.evaluateDefine(rest, env);
-
-          case "define-module":
-            return this.evaluteDefineModule(rest, env);
-
+          case "defn":
+            return this.evaluateDefn(rest, env);
           case "lambda":
             return this.evaluateLambda(rest, env);
-
           case "begin":
             return this.evaluateBegin(rest, env);
-
           case "let":
             return this.evaluateLet(rest, env);
+          case "and":
+            return this.evaluateAnd(rest, env);
+          case "or":
+            return this.evaluateOr(rest, env);
+          case "require":
+            return this.evaluateRequire(rest, env);
         }
       }
 
       // Function application
-      const evaledFirst = this.evaluate(first, env);
-      if (!isFunction(evaledFirst)) {
+      const proc = this.evaluate(first, env);
+      if (!isFunction(proc)) {
         throw new EvalError(`${first.value} is not a function`);
       }
 
-      const args = rest.map((arg) => this.evaluate(arg, env));
-      return (evaledFirst.value as LispFunction)(...args);
+      const evaledArgs = [];
+      for (const arg of rest) {
+        evaledArgs.push(this.evaluate(arg, env));
+      }
+
+      // Apply function with evaluated arguments
+      return (proc.value as LispFunction)(...evaledArgs);
     }
 
     throw new EvalError(`Cannot evaluate expression: ${JSON.stringify(exp)}`);
+  }
+
+  private evaluateRequire(args: LispVal[], env: Environment): LispVal {
+    if (args.length !== 1) {
+      throw new EvalError("Require requires exactly one argument");
+    }
+
+    const [module] = args;
+
+    if (!isString(module)) {
+      throw new EvalError("Require argument must be a string");
+    }
+
+    let source: string;
+
+    try {
+      source = Deno.readTextFileSync(module.value);
+    } catch (error) {
+      const err = error as Error;
+      if (err instanceof Deno.errors.NotFound) {
+        throw new EvalError(`Module not found: ${module.value}`);
+      } else {
+        throw new EvalError(`Error loading module:
+${err.message}`);
+      }
+    }
+
+    const tokens = tokenize(source);
+    const parsed = new Parser(tokens).parse();
+    return this.evaluate(parsed, env);
   }
 
   private evaluateQuote(args: LispVal[]): LispVal {
@@ -139,13 +191,15 @@ export class Evaluator {
     const [condition, consequent, alternative] = args;
     const test = this.evaluate(condition, env);
 
-    return isBoolean(test) && test.value === false
+    // In Lisp, only #f (false) is falsy, everything else is truthy
+    const shouldTakeElse = isBoolean(test) && test.value === false;
+
+    return shouldTakeElse
       ? this.evaluate(alternative, env)
       : this.evaluate(consequent, env);
   }
 
   private evaluteDefineModule(args: LispVal[], env: Environment): LispVal {
-    console.log(args);
     return createNull();
   }
 
@@ -162,6 +216,18 @@ export class Evaluator {
     return env.set(symbol.value as string, this.evaluate(value, env));
   }
 
+  private evaluateDefn(args: LispVal[], env: Environment): LispVal {
+    const [name, params, body] = args;
+    return this.evaluateDefine([
+      name,
+      createList([
+        createLambdaSymbol(),
+        params,
+        body,
+      ]),
+    ], env);
+  }
+
   private evaluateLambda(args: LispVal[], env: Environment): LispVal {
     if (args.length < 2) {
       throw new EvalError("Lambda requires at least two arguments");
@@ -172,20 +238,27 @@ export class Evaluator {
       throw new EvalError("Lambda parameters must be a list of symbols");
     }
 
-    const parameters = (params.value as LispVal[]).map(
-      (p) => (p.value as string),
-    );
+    const parameters = (params.value as LispVal[]).map((
+      p,
+    ) => (p.value as string));
+    const bodyExpressions = body; // Capture body expressions
 
-    return createFunction((...args: LispVal[]): LispVal => {
+    // Create function that captures both the environment and body
+    return createFunction((...funcArgs: LispVal[]): LispVal => {
+      // Create new environment for function execution
       const localEnv = new Environment(env);
-      parameters.forEach((param, i) => {
-        localEnv.set(param, args[i] || createNull());
-      });
 
-      return body.reduce(
-        (_, exp) => this.evaluate(exp, localEnv),
-        createNull(),
-      );
+      // Bind parameters to arguments
+      for (let i = 0; i < parameters.length; i++) {
+        localEnv.set(parameters[i], funcArgs[i] || createNull());
+      }
+
+      // Execute body expressions sequentially
+      let result = createNull();
+      for (const expr of bodyExpressions) {
+        result = this.evaluate(expr, localEnv);
+      }
+      return result;
     });
   }
 
@@ -207,10 +280,11 @@ export class Evaluator {
       throw new EvalError("Let bindings must be a list");
     }
 
+    // Create fresh environment for let
     const localEnv = new Environment(env);
-    const bindingsList = bindings.value as LispVal[];
 
-    // Process bindings
+    // Process bindings first, evaluating each value in the original environment
+    const bindingsList = bindings.value as LispVal[];
     for (const binding of bindingsList) {
       if (!isList(binding) || binding.value.length !== 2) {
         throw new EvalError("Each binding must be a list of two elements");
@@ -221,11 +295,58 @@ export class Evaluator {
         throw new EvalError("Binding name must be a symbol");
       }
 
-      localEnv.set(symbol.value as string, this.evaluate(value, env));
+      // Evaluate value in original environment and set in new environment
+      const evaluatedValue = this.evaluate(value, env);
+      localEnv.set(symbol.value as string, evaluatedValue);
     }
 
-    // Evaluate body in new environment
-    return body.reduce((_, exp) => this.evaluate(exp, localEnv), createNull());
+    // Finally evaluate body in the new environment
+    let result = createNull();
+    for (const expr of body) {
+      result = this.evaluate(expr, localEnv);
+    }
+
+    return result;
+  }
+
+  private evaluateAnd(args: LispVal[], env: Environment): LispVal {
+    if (args.length === 0) {
+      return createBoolean(true); // Empty and is true, following Lisp convention
+    }
+
+    for (let i = 0; i < args.length; i++) {
+      const result = this.evaluate(args[i], env);
+      // In Lisp, typically only false/nil is falsy, everything else is truthy
+      if (isBoolean(result) && result.value === false) {
+        return createBoolean(false);
+      }
+      // If this is the last value and we haven't returned false, return the actual value
+      if (i === args.length - 1) {
+        return result;
+      }
+    }
+
+    return createBoolean(true);
+  }
+
+  private evaluateOr(args: LispVal[], env: Environment): LispVal {
+    if (args.length === 0) {
+      return createBoolean(false); // Empty or is false, following Lisp convention
+    }
+
+    for (let i = 0; i < args.length; i++) {
+      const result = this.evaluate(args[i], env);
+      // In Lisp, only false/nil is falsy, so any non-false value should trigger short-circuit
+      if (!isBoolean(result) || result.value === true) {
+        return result; // Return the actual truthy value, not just true
+      }
+      // If this is the last value and we haven't found a truthy value, return it
+      if (i === args.length - 1) {
+        return result;
+      }
+    }
+
+    return createBoolean(false);
   }
 }
 
@@ -242,6 +363,24 @@ export function createGlobalEnv(): Environment {
       }
       return createNumber(
         args.reduce((sum, n) => sum + (n.value as number), 0),
+      );
+    }),
+  );
+
+  env.set(
+    "%",
+    createFunction((...args: LispVal[]): LispVal => {
+      if (!args.every(isNumber)) {
+        throw new EvalError("% requires numbers");
+      }
+      if (args.length !== 2) {
+        throw new EvalError("% requires exactly two arguments");
+      }
+      if (args[1].value === 0) {
+        throw new EvalError("modulo by zero error");
+      }
+      return createNumber(
+        (args[0].value as number) % (args[1].value as number),
       );
     }),
   );
@@ -306,14 +445,13 @@ export function createGlobalEnv(): Environment {
   env.set(
     "=",
     createFunction((...args: LispVal[]): LispVal => {
-      if (!args.every(isNumber)) {
-        throw new EvalError("= requires numbers");
-      }
       if (args.length < 2) {
         throw new EvalError("= requires at least two arguments");
       }
+
+      // Check if all arguments
       for (let i = 1; i < args.length; i++) {
-        if ((args[i - 1].value as number) !== (args[i].value as number)) {
+        if ((args[i - 1].value) !== (args[i].value)) {
           return createBoolean(false);
         }
       }
@@ -325,7 +463,7 @@ export function createGlobalEnv(): Environment {
     ">",
     createFunction((...args: LispVal[]): LispVal => {
       if (!args.every(isNumber)) {
-        throw new EvalError("> requires numbers");
+        return createBoolean(false);
       }
       if (args.length < 2) {
         throw new EvalError("> requires at least two arguments");
@@ -369,13 +507,10 @@ export function createGlobalEnv(): Environment {
     "head",
     createFunction((list: LispVal): LispVal => {
       if (!isList(list)) {
-        throw new EvalError("car requires a list");
+        throw new EvalError("head requires a list");
       }
       const elements = list.value as LispVal[];
-      if (elements.length === 0) {
-        throw new EvalError("car: empty list");
-      }
-      return elements[0];
+      return elements.length === 0 ? createNull() : elements[0];
     }),
   );
 
@@ -383,21 +518,21 @@ export function createGlobalEnv(): Environment {
     "tail",
     createFunction((list: LispVal): LispVal => {
       if (!isList(list)) {
-        throw new EvalError("cdr requires a list");
+        throw new EvalError("tail requires a list");
       }
       const elements = list.value as LispVal[];
       if (elements.length === 0) {
-        throw new EvalError("cdr: empty list");
+        return createNull();
       }
       return createList(elements.slice(1));
     }),
   );
 
   env.set(
-    "cons",
+    "concat",
     createFunction((head: LispVal, tail: LispVal): LispVal => {
       if (!isList(tail)) {
-        throw new EvalError("cons requires a list as its second argument");
+        throw new EvalError("concat requires a list as its second argument");
       }
       return createList([head, ...(tail.value as LispVal[])]);
     }),
@@ -423,7 +558,17 @@ export function createGlobalEnv(): Environment {
   env.set(
     "print",
     createFunction((arg: LispVal): LispVal => {
-      return arg;
+      return env.get<LispVal<LispType, LispFunction>>("inspect").value(arg);
+    }),
+  );
+
+  env.set(
+    "not",
+    createFunction((arg: LispVal): LispVal => {
+      if (isBoolean(arg)) {
+        return createBoolean(!arg.value);
+      }
+      return createBoolean(false);
     }),
   );
 
@@ -431,8 +576,6 @@ export function createGlobalEnv(): Environment {
     "make-hash",
     createFunction((...args: LispVal[]): LispVal => {
       const hash = new Map<string, LispVal>();
-
-      // args should be a single list containing pairs of key-value
       const pairs = args[0];
       if (!isList(pairs)) {
         throw new EvalError("make-hash requires a list of key-value pairs");
@@ -475,6 +618,62 @@ export function createGlobalEnv(): Environment {
     }),
   );
 
+  env.set("true", createBoolean(true));
+  env.set("false", createBoolean(false));
+  env.set(
+    "type?",
+    createFunction((arg: LispVal): LispVal => {
+      return createString(arg.type);
+    }),
+  );
+  env.set(
+    "error",
+    createFunction((arg: LispVal): LispVal => {
+      return createError(arg.value as string);
+    }),
+  );
+  env.set(
+    "error?",
+    createFunction((arg: LispVal): LispVal => {
+      return createBoolean(isError(arg));
+    }),
+  );
+  env.set(
+    "js-eval",
+    createFunction((arg: LispVal): LispVal => {
+      function deserialize(value: any): any {
+        switch (typeof value) {
+          case "number":
+            return createNumber(value);
+          case "string":
+            return createString(value);
+          case "boolean":
+            return createBoolean(value);
+          case "object":
+            if (Array.isArray(value)) {
+              return createList(value.map(deserialize));
+            } else {
+              const hash = value.value as Map<string, LispVal>;
+              const obj: Record<string, any> = {};
+              for (const [key, val] of hash.entries()) {
+                obj[key] = deserialize(val);
+              }
+              return obj;
+            }
+          default:
+            return null;
+        }
+      }
+      try {
+        const value = eval(arg.value as string);
+        return deserialize(value);
+      } catch (error) {
+        console.log(error);
+        const err = error as Error;
+        return createError(err.message);
+      }
+    }),
+  );
   // Add more arithmetic, comparison, and list operations...
 
   return env;

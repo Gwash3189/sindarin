@@ -1,0 +1,41 @@
+{
+  "scriptId": "319",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/src/mod.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 841, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "<instance_members_initializer>",
+      "ranges": [{ "startOffset": 180, "endOffset": 183, "count": 39 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "ParenSaurus",
+      "ranges": [{ "startOffset": 187, "endOffset": 239, "count": 39 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "evaluate",
+      "ranges": [{ "startOffset": 302, "endOffset": 430, "count": 63 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "evaluateMultiple",
+      "ranges": [{ "startOffset": 469, "endOffset": 561, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "getEnvValue",
+      "ranges": [{ "startOffset": 603, "endOffset": 657, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "resetEnv",
+      "ranges": [{ "startOffset": 687, "endOffset": 737, "count": 0 }],
+      "isBlockCoverage": false
+    }
+  ]
+}

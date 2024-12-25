@@ -1,0 +1,124 @@
+{
+  "scriptId": "318",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/src/types.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 2181, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 45, "endOffset": 404, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createNumber",
+      "ranges": [{ "startOffset": 494, "endOffset": 539, "count": 204 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createString",
+      "ranges": [{ "startOffset": 562, "endOffset": 607, "count": 11 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createBoolean",
+      "ranges": [{ "startOffset": 631, "endOffset": 677, "count": 142 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createHash",
+      "ranges": [{ "startOffset": 698, "endOffset": 741, "count": 5 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createList",
+      "ranges": [{ "startOffset": 762, "endOffset": 805, "count": 144 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createFunction",
+      "ranges": [{ "startOffset": 830, "endOffset": 877, "count": 674 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createExport",
+      "ranges": [{ "startOffset": 900, "endOffset": 945, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "createKeyword",
+      "ranges": [
+        { "startOffset": 969, "endOffset": 1045, "count": 15 },
+        { "startOffset": 1031, "endOffset": 1040, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createSymbol",
+      "ranges": [{ "startOffset": 1068, "endOffset": 1113, "count": 183 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "createNull",
+      "ranges": [{ "startOffset": 1134, "endOffset": 1179, "count": 104 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isNumber",
+      "ranges": [{ "startOffset": 1222, "endOffset": 1246, "count": 1206 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isString",
+      "ranges": [{ "startOffset": 1265, "endOffset": 1289, "count": 719 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isBoolean",
+      "ranges": [{ "startOffset": 1309, "endOffset": 1334, "count": 789 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isList",
+      "ranges": [{ "startOffset": 1351, "endOffset": 1373, "count": 342 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isFunction",
+      "ranges": [{ "startOffset": 1394, "endOffset": 1420, "count": 239 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isKeyword",
+      "ranges": [{ "startOffset": 1440, "endOffset": 1465, "count": 734 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isSymbol",
+      "ranges": [{ "startOffset": 1484, "endOffset": 1508, "count": 1063 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "isNull",
+      "ranges": [{ "startOffset": 1525, "endOffset": 1547, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "LispError",
+      "ranges": [{ "startOffset": 1598, "endOffset": 1672, "count": 6 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "ParseError",
+      "ranges": [{ "startOffset": 1714, "endOffset": 1789, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "EvalError",
+      "ranges": [{ "startOffset": 1830, "endOffset": 1904, "count": 5 }],
+      "isBlockCoverage": true
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "scriptId": "325",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/src/tokeniser.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 5025, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "<instance_members_initializer>",
+      "ranges": [{ "startOffset": 129, "endOffset": 161, "count": 63 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "Tokenizer",
+      "ranges": [
+        { "startOffset": 165, "endOffset": 281, "count": 63 },
+        { "startOffset": 269, "endOffset": 276, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "advance",
+      "ranges": [
+        { "startOffset": 284, "endOffset": 429, "count": 2134 },
+        { "startOffset": 390, "endOffset": 417, "count": 2071 },
+        { "startOffset": 418, "endOffset": 424, "count": 63 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "skipWhitespace",
+      "ranges": [
+        { "startOffset": 432, "endOffset": 542, "count": 247 },
+        { "startOffset": 478, "endOffset": 508, "count": 1235 },
+        { "startOffset": 509, "endOffset": 538, "count": 999 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "readNumber",
+      "ranges": [
+        { "startOffset": 545, "endOffset": 1051, "count": 81 },
+        { "startOffset": 645, "endOffset": 659, "count": 1 },
+        { "startOffset": 660, "endOffset": 688, "count": 1 },
+        { "startOffset": 690, "endOffset": 740, "count": 1 },
+        { "startOffset": 768, "endOffset": 802, "count": 172 },
+        { "startOffset": 803, "endOffset": 866, "count": 91 },
+        { "startOffset": 898, "endOffset": 969, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "readString",
+      "ranges": [
+        { "startOffset": 1054, "endOffset": 2160, "count": 8 },
+        { "startOffset": 1167, "endOffset": 1194, "count": 44 },
+        { "startOffset": 1195, "endOffset": 1942, "count": 36 },
+        { "startOffset": 1234, "endOffset": 1863, "count": 0 },
+        { "startOffset": 1970, "endOffset": 2036, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "readKeyword",
+      "ranges": [
+        { "startOffset": 2163, "endOffset": 2556, "count": 15 },
+        { "startOffset": 2274, "endOffset": 2312, "count": 85 },
+        { "startOffset": 2313, "endOffset": 2376, "count": 70 },
+        { "startOffset": 2406, "endOffset": 2481, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "readSymbol",
+      "ranges": [
+        { "startOffset": 2559, "endOffset": 2798, "count": 173 },
+        { "startOffset": 2622, "endOffset": 2660, "count": 820 },
+        { "startOffset": 2661, "endOffset": 2724, "count": 651 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "peek",
+      "ranges": [
+        { "startOffset": 2801, "endOffset": 2902, "count": 24 },
+        { "startOffset": 2891, "endOffset": 2897, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "tokenize",
+      "ranges": [
+        { "startOffset": 2905, "endOffset": 4864, "count": 63 },
+        { "startOffset": 2977, "endOffset": 4841, "count": 779 },
+        { "startOffset": 3043, "endOffset": 3101, "count": 247 },
+        { "startOffset": 3101, "endOffset": 3178, "count": 532 },
+        { "startOffset": 3178, "endOffset": 3322, "count": 123 },
+        { "startOffset": 3322, "endOffset": 3359, "count": 409 },
+        { "startOffset": 3359, "endOffset": 3504, "count": 122 },
+        { "startOffset": 3504, "endOffset": 3541, "count": 287 },
+        { "startOffset": 3541, "endOffset": 3680, "count": 0 },
+        { "startOffset": 3680, "endOffset": 3746, "count": 287 },
+        { "startOffset": 3746, "endOffset": 3817, "count": 207 },
+        { "startOffset": 3774, "endOffset": 3788, "count": 11 },
+        { "startOffset": 3789, "endOffset": 3817, "count": 11 },
+        { "startOffset": 3819, "endOffset": 3886, "count": 81 },
+        { "startOffset": 3886, "endOffset": 3947, "count": 206 },
+        { "startOffset": 3947, "endOffset": 4014, "count": 8 },
+        { "startOffset": 4014, "endOffset": 4076, "count": 198 },
+        { "startOffset": 4076, "endOffset": 4144, "count": 15 },
+        { "startOffset": 4144, "endOffset": 4251, "count": 183 },
+        { "startOffset": 4251, "endOffset": 4318, "count": 173 },
+        { "startOffset": 4318, "endOffset": 4354, "count": 10 },
+        { "startOffset": 4354, "endOffset": 4394, "count": 5 },
+        { "startOffset": 4395, "endOffset": 4435, "count": 5 },
+        { "startOffset": 4437, "endOffset": 4762, "count": 5 },
+        { "startOffset": 4762, "endOffset": 4841, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "tokenize",
+      "ranges": [{ "startOffset": 4923, "endOffset": 5024, "count": 63 }],
+      "isBlockCoverage": true
+    }
+  ]
+}

@@ -1,18 +1,414 @@
 import { beforeEach, describe, it } from "jsr:@std/testing/bdd";
 import { expect } from "jsr:@std/expect";
 import {
+  createFunction,
   createList,
   createNull,
   createNumber,
   createString,
+  createSymbol,
+  LispVal,
 } from "../src/types.ts";
 import { ParenSaurus } from "../src/mod.ts";
-import { tokenize } from "../src/tokeniser.ts";
-import { parse } from "../src/parser.ts";
+import { createBoolean } from "../src/types.ts";
+import { isList } from "../src/types.ts";
 
 // integration.test.ts
 
 describe("ParenSaurus Integration Tests", () => {
+  describe("Language Features", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("should support all core language features", () => {
+      // Define a list of numbers
+      lisp.evaluate(`
+        (define numbers (list 1 2 3 4 5))
+
+        (define even?
+          (lambda (x)
+            (if (= (type? x) "number")
+                (= (% x 2) 0)
+                false)))
+
+        (define positive?
+          (lambda (x)
+            (if (= (type? x) "number")
+                (> x 0)
+                false)))
+      `);
+
+      // Define a function that squares a number
+      lisp.evaluate(`
+        (define square
+          (lambda (x)
+            (* x x)))
+      `);
+
+      // Define a hash map of user data
+      lisp.evaluate(`
+        (define user #{
+          :name "John"
+          :age 30
+          :scores (list 85 92 78 95)
+        })
+      `);
+
+      // Test predicate functions
+      expect(lisp.evaluate("(even? 4)")).toEqual(createBoolean(true));
+      expect(lisp.evaluate("(even? 3)")).toEqual(createBoolean(false));
+      expect(lisp.evaluate("(positive? 5)")).toEqual(createBoolean(true));
+      expect(lisp.evaluate("(positive? -1)")).toEqual(createBoolean(false));
+
+      // Test arithmetic and function application
+      expect(lisp.evaluate("(square 5)")).toEqual(createNumber(25));
+      expect(lisp.evaluate("(+ (* 2 3) (/ 10 2))")).toEqual(createNumber(11));
+
+      // Test conditional with complex predicate
+      lisp.evaluate(`
+        (define check-age
+          (lambda (person threshold)
+            (if (> (hash-get person :age) threshold)
+                "Adult"
+                "Minor")))
+      `);
+      expect(lisp.evaluate("(check-age user 18)")).toEqual(
+        createString("Adult"),
+      );
+      expect(lisp.evaluate("(check-age user 40)")).toEqual(
+        createString("Minor"),
+      );
+
+      // // Test list manipulation and null handling
+      expect(lisp.evaluate("(head (tail numbers))")).toEqual(createNumber(2));
+      expect(lisp.evaluate("(null? (list))")).toEqual(createBoolean(false));
+      expect(lisp.evaluate("(null? numbers)")).toEqual(createBoolean(false));
+
+      // // Test closures
+      lisp.evaluate(`
+        (define make-adder
+          (lambda (x)
+            (lambda (y)
+              (+ x y))))
+      `);
+      lisp.evaluate("(define add5 (make-adder 5))");
+      expect(lisp.evaluate("(add5 3)")).toEqual(createNumber(8));
+
+      lisp.evaluate(`
+        (define filter
+          (lambda (predicate lst)
+            (if (null? lst)
+                (list)
+                (if (predicate (head lst))
+                    (concat (head lst) (filter predicate (tail lst)))
+                    (filter predicate (tail lst)))
+          )))
+        `);
+
+      // Test complex expression with multiple features
+      lisp.evaluate(`
+        (define process-scores
+          (lambda (user min-score)
+            (if (> (hash-get user :age) 20)
+                (filter (lambda (score) (> score min-score))
+                       (hash-get user :scores))
+                (list))))
+      `);
+
+      expect(lisp.evaluate("(process-scores user 85)"))
+        .toEqual(createList([createNumber(92), createNumber(95)]));
+
+      expect(lisp.evaluate("'(a b c)"))
+        .toEqual(
+          createList([createSymbol("a"), createSymbol("b"), createSymbol("c")]),
+        );
+    });
+  });
+
+  describe("Comments", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("ignores comments", () => {
+      expect(lisp.evaluate("(+ 1 2) ; comment")).toEqual(createNumber(3));
+    });
+
+    it("ignores comments even when they contain code", () => {
+      expect(lisp.evaluate(";(defn x () (inspect x))")).toEqual(createList([]));
+    });
+  });
+
+  describe("require", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("should load and evaluate a file", () => {
+      lisp.evaluate('(require "./test/fixtures/test.lisp")');
+      expect(lisp.env.get("test")).toEqual(createNumber(42));
+    });
+
+    it("should throw an error if the file does not exist", () => {
+      expect(() => lisp.evaluate('(require "./test/fixtures/missing.lisp")'))
+        .toThrow("Module not found: ./test/fixtures/missing.lisp");
+    });
+  });
+
+  describe("js-eval", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("should evaluate JS code", () => {
+      expect(lisp.evaluate('(js-eval "1 + 2")')).toEqual(createNumber(3));
+    });
+
+    it("should evaluate complex JS code", () => {
+      expect(
+        lisp.evaluate(
+          "(js-eval \"Deno.readTextFileSync('test/fixtures/test.lisp')\")",
+        ),
+      ).toEqual(createString("(define test 42)\n"));
+    });
+
+    it("should handle JS errors", () => {
+      expect(lisp.evaluate("(js-eval \"throw new Error('error')\")"))
+        .toEqual({
+          type: "error",
+          value: "error",
+        });
+    });
+  });
+
+  describe("error?", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("should return true for error values", () => {
+      expect(lisp.evaluate('(error? (error "error"))')).toEqual(
+        createBoolean(true),
+      );
+    });
+
+    it("should return false for non-error values", () => {
+      expect(lisp.evaluate("(error? 42)")).toEqual(createBoolean(false));
+    });
+
+    it("can be used in conditionals", () => {
+      expect(lisp.evaluate(`
+      (
+        if (error? (error "Oh No!"))
+        1
+        2
+      )
+        `)).toEqual(createNumber(1));
+    });
+  });
+
+  describe("and special form", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    describe("defn", () => {
+      let result: LispVal;
+
+      beforeEach(() => {
+        result = lisp.evaluate("(defn add (x y) (+ x y))");
+      });
+
+      it("defines a function", () => {
+        expect(result).toHaveProperty(
+          "type",
+          lisp.env.get("add").type,
+        );
+      });
+
+      it("attaches the correct body to the function", () => {
+        expect(result).toHaveProperty("value", lisp.env.get("add").value);
+      });
+    });
+
+    it("should return true for empty and", () => {
+      expect(lisp.evaluate("(and)")).toEqual(createBoolean(true));
+    });
+
+    it("should return single value for single argument", () => {
+      expect(lisp.evaluate("(and 42)")).toEqual(createNumber(42));
+    });
+
+    it("should return false if any argument is false", () => {
+      expect(lisp.evaluate("(and true false true)")).toEqual(
+        createBoolean(false),
+      );
+    });
+
+    it("should return last value if all are truthy", () => {
+      expect(lisp.evaluate("(and 1 2 3)")).toEqual(createNumber(3));
+    });
+
+    it("should short-circuit on first false", () => {
+      // Define a function that will throw if called
+      lisp.evaluate(`
+        (define will-error
+          (lambda ()
+            (/ 1 0)))
+      `);
+
+      // If and short-circuits correctly, will-error won't be called
+      expect(lisp.evaluate("(and false (will-error))")).toEqual(
+        createBoolean(false),
+      );
+    });
+
+    it("should work with complex expressions", () => {
+      expect(lisp.evaluate("(and (> 5 3) (< 2 4))")).toEqual(
+        createBoolean(true),
+      );
+      expect(lisp.evaluate("(and (> 5 3) (> 2 4))")).toEqual(
+        createBoolean(false),
+      );
+    });
+  });
+
+  describe("or special form", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("should return false for empty or", () => {
+      expect(lisp.evaluate("(or)")).toEqual(createBoolean(false));
+    });
+
+    it("should return single value for single argument", () => {
+      expect(lisp.evaluate("(or 42)")).toEqual(createNumber(42));
+      expect(lisp.evaluate("(or false)")).toEqual(createBoolean(false));
+    });
+
+    it("should return first truthy value encountered", () => {
+      expect(lisp.evaluate("(or false 42 true)")).toEqual(createNumber(42));
+    });
+
+    it("should return false if all values are false", () => {
+      expect(lisp.evaluate("(or false false false)")).toEqual(
+        createBoolean(false),
+      );
+    });
+
+    it("should short-circuit on first truthy value", () => {
+      // Define a function that will throw if called
+      lisp.evaluate(`
+        (define will-error
+          (lambda ()
+            (/ 1 0)))
+      `);
+
+      // If or short-circuits correctly, will-error won't be called
+      expect(lisp.evaluate("(or true (will-error))")).toEqual(
+        createBoolean(true),
+      );
+    });
+
+    it("should work with complex expressions", () => {
+      expect(lisp.evaluate("(or (> 3 5) (< 2 4))")).toEqual(
+        createBoolean(true),
+      );
+      expect(lisp.evaluate("(or (> 3 5) (> 2 4))")).toEqual(
+        createBoolean(false),
+      );
+    });
+
+    it("should work with mixed types", () => {
+      expect(lisp.evaluate('(or false 0 "hello")')).toEqual(
+        createNumber(0),
+      );
+    });
+
+    it("should combine with and correctly", () => {
+      expect(lisp.evaluate("(and (or false true) (or 1 2))"))
+        .toEqual(createNumber(1));
+    });
+  });
+
+  describe("Predicate Function Names", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    describe("when defining predicate functions", () => {
+      it("should allow ? in function names", () => {
+        // Define a simple predicate function
+        lisp.evaluate(`
+        (define even?
+          (lambda (x)
+            (if (= (type? x) "number")
+                (= (% x 2) 0)
+                false)))
+        `);
+
+        // Test the predicate function
+        expect(lisp.evaluate("(even? 2)")).toEqual(createBoolean(true));
+        expect(lisp.evaluate("(even? 3)")).toEqual(createBoolean(false));
+      });
+
+      it("should allow complex predicate function composition", () => {
+        // Define multiple predicate functions and compose them
+        lisp.evaluate(`
+          (define positive?
+            (lambda (x)
+              (if (= (type? x) "number")
+                  (> x 0)
+                  false)))
+        `);
+
+        lisp.evaluate(`
+          (define even?
+            (lambda (x)
+              (if (= (type? x) "number")
+                  (= (% x 2) 0)
+                  false)))
+        `);
+
+        lisp.evaluate(`
+          (define positive-and-even?
+            (lambda (x)
+              (if (positive? x)
+                  (even? x)
+                  false)))
+        `);
+
+        expect(lisp.evaluate("(positive-and-even? 2)")).toEqual(
+          createBoolean(true),
+        );
+        expect(lisp.evaluate("(positive-and-even? 3)")).toEqual(
+          createBoolean(false),
+        );
+        expect(lisp.evaluate("(positive-and-even? -2)")).toEqual(
+          createBoolean(false),
+        );
+      });
+    });
+  });
+
   describe("Arithmetic Operations", () => {
     let lisp: ParenSaurus;
 
@@ -254,9 +650,9 @@ describe("ParenSaurus Integration Tests", () => {
       );
     });
 
-    it("should construct new lists with cons", () => {
+    it("should construct new lists with concat", () => {
       expect(
-        lisp.evaluate("(cons 1 (list 2 3))"),
+        lisp.evaluate("(concat 1 (list 2 3))"),
       ).toEqual(
         createList([createNumber(1), createNumber(2), createNumber(3)]),
       );

@@ -1,3 +1,5 @@
+export const SYMBOL_CHARS = /[a-zA-Z0-9+\-*/<>=!?._\%]/;
+
 // Token types for the lexer
 enum TokenType {
   LEFT_PAREN = "LEFT_PAREN",
@@ -9,7 +11,21 @@ enum TokenType {
   QUOTE = "QUOTE",
   HASH_START = "HASH_START",
   HASH_END = "HASH_END",
+  COMMENT = "COMMENT",
 }
+
+export const TokenValues = {
+  [TokenType.LEFT_PAREN]: "(",
+  [TokenType.RIGHT_PAREN]: ")",
+  [TokenType.QUOTE]: "'",
+  [TokenType.HASH_START]: "{",
+  [TokenType.HASH_END]: "}",
+  [TokenType.SYMBOL]: SYMBOL_CHARS,
+  [TokenType.KEYWORD]: ":",
+  [TokenType.NUMBER]: "",
+  [TokenType.STRING]: '"',
+  [TokenType.COMMENT]: ";",
+} as const;
 
 // Token interface for lexer output
 interface Token {
@@ -18,27 +34,31 @@ interface Token {
 }
 
 // Main Lisp value type
-interface LispVal {
-  type:
-    | "number"
-    | "string"
-    | "boolean"
-    | "function"
-    | "list"
-    | "export"
-    | "keyword"
-    | "symbol"
-    | "null"
-    | "hash";
-  value:
-    | number
-    | string
-    | boolean
-    | LispFunction
-    | LispVal[]
-    | LispExport
-    | LispHash
-    | null;
+export type LispType =
+  | "number"
+  | "string"
+  | "boolean"
+  | "function"
+  | "list"
+  | "export"
+  | "keyword"
+  | "symbol"
+  | "null"
+  | "error"
+  | "hash";
+
+export type LispValue =
+  | number
+  | string
+  | boolean
+  | LispFunction
+  | LispVal[]
+  | LispExport
+  | LispHash
+  | null;
+interface LispVal<T = LispType, V = LispValue> {
+  type: T;
+  value: V;
 }
 
 // Function type
@@ -58,6 +78,11 @@ const createNumber = (n: number): LispVal => ({
 
 const createString = (s: string): LispVal => ({
   type: "string",
+  value: s,
+});
+
+const createError = (s: string): LispVal => ({
+  type: "error",
   value: s,
 });
 
@@ -96,6 +121,11 @@ const createSymbol = (s: string): LispVal => ({
   value: s,
 });
 
+export const createLambdaSymbol = (): LispVal => ({
+  type: "symbol",
+  value: `lambda`,
+});
+
 const createNull = (): LispVal => ({
   type: "null",
   value: null,
@@ -109,6 +139,10 @@ const isNumber = (
 const isString = (
   v: LispVal,
 ): v is LispVal & { type: "string"; value: string } => v.type === "string";
+
+const isError = (
+  v: LispVal,
+): v is LispVal & { type: "error"; value: string } => v.type === "error";
 
 const isBoolean = (
   v: LispVal,
@@ -158,6 +192,7 @@ class EvalError extends LispError {
 
 export {
   createBoolean,
+  createError,
   createExport,
   createFunction,
   createHash,
@@ -169,6 +204,7 @@ export {
   createSymbol,
   EvalError,
   isBoolean,
+  isError,
   isFunction,
   isKeyword,
   isList,

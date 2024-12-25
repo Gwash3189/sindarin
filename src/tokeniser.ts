@@ -1,9 +1,24 @@
-import { ParseError, Token, TokenType } from "./types.ts";
+import { ParseError, SYMBOL_CHARS, Token } from "./types.ts";
+
+import {
+  CommentToken,
+  HashEndToken,
+  HashStartToken,
+  KeywordToken,
+  LeftParenToken,
+  NumberToken,
+  QuoteToken,
+  RightParenToken,
+  StringToken,
+  SymbolToken,
+  WhiteSpaceToken,
+} from "./tokens.ts";
 
 export class Tokenizer {
   private input: string;
   private position: number;
   private currentChar: string | null;
+  private tokens: Token[] = [];
 
   constructor(input: string) {
     this.input = input;
@@ -11,20 +26,22 @@ export class Tokenizer {
     this.currentChar = this.input[0] || null;
   }
 
-  private advance(count: number = 1): void {
+  public getCurrentChar(): string | null {
+    return this.currentChar;
+  }
+
+  public pushToken(token: Token) {
+    this.tokens.push(token);
+  }
+
+  public advance(count: number = 1): void {
     this.position += count;
     this.currentChar = this.position < this.input.length
       ? this.input[this.position]
       : null;
   }
 
-  private skipWhitespace(): void {
-    while (this.currentChar && /\s/.test(this.currentChar)) {
-      this.advance();
-    }
-  }
-
-  private readNumber(): Token {
+  public readNumber(): Token {
     let result = "";
 
     // Handle negative numbers
@@ -42,13 +59,10 @@ export class Tokenizer {
       throw new ParseError(`Invalid number format: ${result}`);
     }
 
-    return {
-      type: TokenType.NUMBER,
-      value: Number(result),
-    };
+    return new NumberToken(result);
   }
 
-  private readString(): Token {
+  public readString(): Token {
     let result = "";
     // Skip the opening quote
     this.advance();
@@ -93,19 +107,14 @@ export class Tokenizer {
     // Skip the closing quote
     this.advance();
 
-    return {
-      type: TokenType.STRING,
-      value: result,
-    };
+    return new StringToken(result);
   }
 
-  private readKeyword(): Token {
+  public readKeyword(): Token {
     let result = ":";
     this.advance(); // Skip the initial colon
 
-    while (
-      this.currentChar && /[a-zA-Z0-9+\-*/<>=!._]/.test(this.currentChar)
-    ) {
+    while (this.currentChar && SYMBOL_CHARS.test(this.currentChar)) {
       result += this.currentChar;
       this.advance();
     }
@@ -114,26 +123,18 @@ export class Tokenizer {
       throw new ParseError("Invalid keyword: only contains colon");
     }
 
-    return {
-      type: TokenType.KEYWORD,
-      value: result,
-    };
+    return new KeywordToken(result);
   }
 
-  private readSymbol(): Token {
+  public readSymbol(): Token {
     let result = "";
 
-    while (
-      this.currentChar && /[a-zA-Z0-9+\-*/<>=!._]/.test(this.currentChar)
-    ) {
+    while (this.currentChar && SYMBOL_CHARS.test(this.currentChar)) {
       result += this.currentChar;
       this.advance();
     }
 
-    return {
-      type: TokenType.SYMBOL,
-      value: result,
-    };
+    return new SymbolToken(result);
   }
 
   private peek(): string | null {
@@ -142,81 +143,76 @@ export class Tokenizer {
       : null;
   }
 
+  private flushTokens() {
+    this.tokens = [];
+  }
+
   tokenize(): Token[] {
-    const tokens: Token[] = [];
+    this.flushTokens();
 
     while (this.currentChar !== null) {
-      // Skip whitespace
-      if (/\s/.test(this.currentChar)) {
-        this.skipWhitespace();
+      if (WhiteSpaceToken.test(this.currentChar)) {
+        WhiteSpaceToken.execute(this);
+        continue;
+      }
+
+      if (CommentToken.test(this.currentChar)) {
+        CommentToken.execute(this);
         continue;
       }
 
       // Handle single-character tokens
-      if (this.currentChar === "(") {
-        tokens.push({ type: TokenType.LEFT_PAREN, value: "(" });
-        this.advance();
+      if (LeftParenToken.test(this.currentChar)) {
+        LeftParenToken.execute(this);
         continue;
       }
 
-      if (this.currentChar === ")") {
-        tokens.push({ type: TokenType.RIGHT_PAREN, value: ")" });
-        this.advance();
+      if (RightParenToken.test(this.currentChar)) {
+        RightParenToken.execute(this);
         continue;
       }
 
-      if (this.currentChar === "'") {
-        tokens.push({ type: TokenType.QUOTE, value: "'" });
-        this.advance();
+      if (QuoteToken.test(this.currentChar)) {
+        QuoteToken.execute(this);
         continue;
       }
 
       // Handle numbers
-      if (
-        /[0-9]/.test(this.currentChar) ||
-        (this.currentChar === "-" && this.peek() && /[0-9]/.test(this.peek()!))
-      ) {
-        tokens.push(this.readNumber());
+      if (NumberToken.test(this.currentChar, this.peek())) {
+        NumberToken.execute(this);
         continue;
       }
 
       // Handle strings
-      if (this.currentChar === '"') {
-        tokens.push(this.readString());
+      if (StringToken.test(this.currentChar)) {
+        StringToken.execute(this);
         continue;
       }
 
-      // Handle keywords
-      if (this.currentChar === ":") {
-        tokens.push(this.readKeyword());
+      if (KeywordToken.test(this.currentChar)) {
+        KeywordToken.execute(this);
         continue;
       }
 
-      // Handle symbols
-      if (/[a-zA-Z+\-*/<>=!?]/.test(this.currentChar)) {
-        tokens.push(this.readSymbol());
+      if (SymbolToken.test(this.currentChar)) {
+        SymbolToken.execute(this);
         continue;
       }
 
-      if (
-        this.currentChar === "#" && (this.position + 1) < this.input.length &&
-        this.input[this.position + 1] === "{"
-      ) {
-        tokens.push({ type: TokenType.HASH_START, value: "#{" });
-        this.advance(2);
+      if (HashStartToken.test(this.currentChar, this.peek())) {
+        HashStartToken.execute(this);
         continue;
       }
 
-      if (this.currentChar === "}") {
-        tokens.push({ type: TokenType.HASH_END, value: "}" });
-        this.advance();
+      if (HashEndToken.test(this.currentChar)) {
+        HashEndToken.execute(this);
         continue;
       }
 
       throw new ParseError(`Unexpected character: ${this.currentChar}`);
     }
 
-    return tokens;
+    return this.tokens;
   }
 }
 
