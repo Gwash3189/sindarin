@@ -161,12 +161,22 @@ const isKeyword = (
   v: LispVal,
 ): v is LispVal & { type: "keyword"; value: string } => v.type === "keyword";
 
+const isHash = (
+  v: LispVal,
+): v is LispVal & { type: "keyword"; value: string } => v.type === "hash";
+
 const isSymbol = (
   v: LispVal,
 ): v is LispVal & { type: "symbol"; value: string } => v.type === "symbol";
 
 const isNull = (v: LispVal): v is LispVal & { type: "null"; value: null } =>
   v.type === "null";
+
+const isLispVal = (v: unknown): v is LispVal => {
+  if (typeof v !== 'object' || v === null) return false;
+  const val = v as LispVal;
+  return 'type' in val && 'value' in val
+}
 
 // Error types
 class LispError extends Error {
@@ -206,9 +216,11 @@ export {
   isBoolean,
   isError,
   isFunction,
+  isHash,
   isKeyword,
   isList,
   isNull,
+  isLispVal,
   isNumber,
   isString,
   isSymbol,

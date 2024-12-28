@@ -1,14 +1,19 @@
 // main.ts
 import { tokenize } from "./tokeniser.ts";
 import { parse } from "./parser.ts";
-import { createGlobalEnv, Environment, evaluate } from "./evaluator.ts";
+import {
+  createGlobalEnv,
+  Environment,
+  environments,
+  evaluate,
+} from "./evaluator.ts";
 import { LispVal } from "./types.ts";
 
 export class ParenSaurus {
   public env: Environment;
 
   constructor() {
-    this.env = createGlobalEnv();
+    this.env = environments.get("global")!;
   }
 
   // Evaluates a string of Lisp code and returns the result
@@ -30,7 +35,9 @@ export class ParenSaurus {
 
   // Reset the environment
   resetEnv(): void {
-    this.env = createGlobalEnv();
+    const env = createGlobalEnv();
+    environments.set("global", env);
+    this.env = env;
   }
 }
 

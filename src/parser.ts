@@ -101,11 +101,8 @@ export class Parser {
     this.consume();
 
     return createList([
-      createSymbol("make-hash"),
-      createList([
-        createSymbol("list"),
-        ...pairs,
-      ]),
+      createSymbol("Hash/create"),
+      ...pairs,
     ]);
   }
 

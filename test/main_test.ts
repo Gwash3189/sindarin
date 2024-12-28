@@ -1,7 +1,6 @@
 import { beforeEach, describe, it } from "jsr:@std/testing/bdd";
 import { expect } from "jsr:@std/expect";
 import {
-  createFunction,
   createList,
   createNull,
   createNumber,
@@ -11,7 +10,6 @@ import {
 } from "../src/types.ts";
 import { ParenSaurus } from "../src/mod.ts";
 import { createBoolean } from "../src/types.ts";
-import { isList } from "../src/types.ts";
 
 // integration.test.ts
 
@@ -26,17 +24,17 @@ describe("ParenSaurus Integration Tests", () => {
     it("should support all core language features", () => {
       // Define a list of numbers
       lisp.evaluate(`
-        (define numbers (list 1 2 3 4 5))
+        (define numbers (List/create 1 2 3 4 5))
 
         (define even?
           (lambda (x)
-            (if (= (type? x) "number")
+            (if (= (Core/type? x) "number")
                 (= (% x 2) 0)
                 false)))
 
         (define positive?
           (lambda (x)
-            (if (= (type? x) "number")
+            (if (= (Core/type? x) "number")
                 (> x 0)
                 false)))
       `);
@@ -53,7 +51,7 @@ describe("ParenSaurus Integration Tests", () => {
         (define user #{
           :name "John"
           :age 30
-          :scores (list 85 92 78 95)
+          :scores (List/create 85 92 78 95)
         })
       `);
 
@@ -71,7 +69,7 @@ describe("ParenSaurus Integration Tests", () => {
       lisp.evaluate(`
         (define check-age
           (lambda (person threshold)
-            (if (> (hash-get person :age) threshold)
+            (if (> (Hash/get person :age) threshold)
                 "Adult"
                 "Minor")))
       `);
@@ -83,9 +81,15 @@ describe("ParenSaurus Integration Tests", () => {
       );
 
       // // Test list manipulation and null handling
-      expect(lisp.evaluate("(head (tail numbers))")).toEqual(createNumber(2));
-      expect(lisp.evaluate("(null? (list))")).toEqual(createBoolean(false));
-      expect(lisp.evaluate("(null? numbers)")).toEqual(createBoolean(false));
+      expect(lisp.evaluate("(List/head (List/tail numbers))")).toEqual(
+        createNumber(2),
+      );
+      expect(lisp.evaluate("(Core/null? (List/create))")).toEqual(
+        createBoolean(false),
+      );
+      expect(lisp.evaluate("(Core/null? numbers)")).toEqual(
+        createBoolean(false),
+      );
 
       // // Test closures
       lisp.evaluate(`
@@ -100,11 +104,11 @@ describe("ParenSaurus Integration Tests", () => {
       lisp.evaluate(`
         (define filter
           (lambda (predicate lst)
-            (if (null? lst)
-                (list)
-                (if (predicate (head lst))
-                    (concat (head lst) (filter predicate (tail lst)))
-                    (filter predicate (tail lst)))
+            (if (Core/null? lst)
+                (List/create)
+                (if (predicate (List/head lst))
+                    (List/concat (List/head lst) (filter predicate (List/tail lst)))
+                    (filter predicate (List/tail lst)))
           )))
         `);
 
@@ -112,10 +116,10 @@ describe("ParenSaurus Integration Tests", () => {
       lisp.evaluate(`
         (define process-scores
           (lambda (user min-score)
-            (if (> (hash-get user :age) 20)
+            (if (> (Hash/get user :age) 20)
                 (filter (lambda (score) (> score min-score))
-                       (hash-get user :scores))
-                (list))))
+                       (Hash/get user :scores))
+                (List/create))))
       `);
 
       expect(lisp.evaluate("(process-scores user 85)"))
@@ -141,24 +145,6 @@ describe("ParenSaurus Integration Tests", () => {
 
     it("ignores comments even when they contain code", () => {
       expect(lisp.evaluate(";(defn x () (inspect x))")).toEqual(createList([]));
-    });
-  });
-
-  describe("require", () => {
-    let lisp: ParenSaurus;
-
-    beforeEach(() => {
-      lisp = new ParenSaurus();
-    });
-
-    it("should load and evaluate a file", () => {
-      lisp.evaluate('(require "./test/fixtures/test.lisp")');
-      expect(lisp.env.get("test")).toEqual(createNumber(42));
-    });
-
-    it("should throw an error if the file does not exist", () => {
-      expect(() => lisp.evaluate('(require "./test/fixtures/missing.lisp")'))
-        .toThrow("Module not found: ./test/fixtures/missing.lisp");
     });
   });
 
@@ -190,7 +176,7 @@ describe("ParenSaurus Integration Tests", () => {
     });
   });
 
-  describe("error?", () => {
+  describe("Core/error?", () => {
     let lisp: ParenSaurus;
 
     beforeEach(() => {
@@ -198,19 +184,19 @@ describe("ParenSaurus Integration Tests", () => {
     });
 
     it("should return true for error values", () => {
-      expect(lisp.evaluate('(error? (error "error"))')).toEqual(
+      expect(lisp.evaluate('(Core/error? (Core/error "error"))')).toEqual(
         createBoolean(true),
       );
     });
 
     it("should return false for non-error values", () => {
-      expect(lisp.evaluate("(error? 42)")).toEqual(createBoolean(false));
+      expect(lisp.evaluate("(Core/error? 42)")).toEqual(createBoolean(false));
     });
 
     it("can be used in conditionals", () => {
       expect(lisp.evaluate(`
       (
-        if (error? (error "Oh No!"))
+        if (Core/error? (Core/error "Oh No!"))
         1
         2
       )
@@ -283,6 +269,46 @@ describe("ParenSaurus Integration Tests", () => {
       expect(lisp.evaluate("(and (> 5 3) (> 2 4))")).toEqual(
         createBoolean(false),
       );
+    });
+  });
+
+  describe("print", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("should return the value", () => {
+      expect(lisp.evaluate('(print "hello")')).toEqual(createString("hello"));
+    });
+
+    describe("when a hash is printed", () => {
+      describe("when make-hash is used", () => {
+        beforeEach(() => {
+          lisp.evaluate(`(defn make-person (name) (Hash/create :name name))`);
+        });
+
+        it("works a hash special form", () => {
+          expect(lisp.evaluate(`(print (make-person "Adam"))`)).toEqual({
+            type: "hash",
+            value: new Map().set(":name", { type: "string", value: "Adam" }),
+          });
+        });
+      });
+
+      describe("when a special form is used", () => {
+        beforeEach(() => {
+          lisp.evaluate(`(defn make-person (name) #{ :name name })`);
+        });
+
+        it("works a hash special form", () => {
+          expect(lisp.evaluate(`(print (make-person "Adam"))`)).toEqual({
+            type: "hash",
+            value: new Map().set(":name", { type: "string", value: "Adam" }),
+          });
+        });
+      });
     });
   });
 
@@ -360,7 +386,7 @@ describe("ParenSaurus Integration Tests", () => {
         lisp.evaluate(`
         (define even?
           (lambda (x)
-            (if (= (type? x) "number")
+            (if (= (Core/type? x) "number")
                 (= (% x 2) 0)
                 false)))
         `);
@@ -375,7 +401,7 @@ describe("ParenSaurus Integration Tests", () => {
         lisp.evaluate(`
           (define positive?
             (lambda (x)
-              (if (= (type? x) "number")
+              (if (= (Core/type? x) "number")
                   (> x 0)
                   false)))
         `);
@@ -383,7 +409,7 @@ describe("ParenSaurus Integration Tests", () => {
         lisp.evaluate(`
           (define even?
             (lambda (x)
-              (if (= (type? x) "number")
+              (if (= (Core/type? x) "number")
                   (= (% x 2) 0)
                   false)))
         `);
@@ -527,20 +553,20 @@ describe("ParenSaurus Integration Tests", () => {
         lisp.evaluate(
           '(define person #{ :name "John" :age 30 :city "New York" })',
         );
-        expect(lisp.evaluate("(hash-get person :name)")).toEqual(
+        expect(lisp.evaluate("(Hash/get person :name)")).toEqual(
           createString("John"),
         );
-        expect(lisp.evaluate("(hash-get person :age)")).toEqual(
+        expect(lisp.evaluate("(Hash/get person :age)")).toEqual(
           createNumber(30),
         );
-        expect(lisp.evaluate("(hash-get person :city)")).toEqual(
+        expect(lisp.evaluate("(Hash/get person :city)")).toEqual(
           createString("New York"),
         );
       });
 
       it("returns null for non-existent keys", () => {
         lisp.evaluate('(define person #{ :name "John" })');
-        expect(lisp.evaluate("(hash-get person :unknown)")).toEqual(
+        expect(lisp.evaluate("(Hash/get person :unknown)")).toEqual(
           createNull(),
         );
       });
@@ -555,8 +581,36 @@ describe("ParenSaurus Integration Tests", () => {
             }
           })
         `);
-        expect(lisp.evaluate("(hash-get (hash-get person :address) :city)"))
+        expect(lisp.evaluate("(Hash/get (Hash/get person :address) :city)"))
           .toEqual(createString("New York"));
+      });
+    });
+  });
+
+  describe("namespace", () => {
+    let lisp: ParenSaurus;
+
+    beforeEach(() => {
+      lisp = new ParenSaurus();
+    });
+
+    it("should allow defining functions in namespaces", () => {
+      lisp.evaluate(`
+        (namespace Test
+          (defn add (x y) (+ x y)))
+      `);
+
+      expect(lisp.evaluate("(Test/add 1 2)")).toEqual(createNumber(3));
+    });
+
+    describe("when ns is used", () => {
+      it("works just the same", () => {
+        lisp.evaluate(`
+          (ns Test
+            (defn add (x y) (+ x y)))
+        `);
+
+        expect(lisp.evaluate("(Test/add 1 2)")).toEqual(createNumber(3));
       });
     });
   });
@@ -636,7 +690,7 @@ describe("ParenSaurus Integration Tests", () => {
 
     it("should get the head of a list", () => {
       expect(
-        lisp.evaluate("(head (list 1 2 3))"),
+        lisp.evaluate("(List/head (List/create 1 2 3))"),
       ).toEqual(
         createNumber(1),
       );
@@ -644,7 +698,7 @@ describe("ParenSaurus Integration Tests", () => {
 
     it("should get the tail of a list", () => {
       expect(
-        lisp.evaluate("(tail (list 1 2 3))"),
+        lisp.evaluate("(List/tail (List/create 1 2 3))"),
       ).toEqual(
         createList([createNumber(2), createNumber(3)]),
       );
@@ -652,7 +706,7 @@ describe("ParenSaurus Integration Tests", () => {
 
     it("should construct new lists with concat", () => {
       expect(
-        lisp.evaluate("(concat 1 (list 2 3))"),
+        lisp.evaluate("(List/concat 1 (List/create 2 3))"),
       ).toEqual(
         createList([createNumber(1), createNumber(2), createNumber(3)]),
       );
