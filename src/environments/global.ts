@@ -9,9 +9,9 @@ import {
   createString,
   isBoolean,
   isNumber,
+  LispError,
   LispVal,
 } from "../types.ts";
-import { isError } from "../types.ts";
 
 const addition = createFunction((...args: LispVal[]): LispVal => {
   if (!args.every(isNumber)) {
@@ -130,6 +130,10 @@ const lessThan = createFunction((...args: LispVal[]): LispVal => {
 
 const makeNull = createNull();
 
+const exit = createFunction((message: LispVal): LispVal => {
+  throw new LispError(message.value as string)
+})
+
 const inspect = createFunction((arg: LispVal): LispVal => {
   return arg;
 });
@@ -181,7 +185,7 @@ const jsEval = createFunction((arg: LispVal): LispVal => {
   }
 });
 
-export const execPath = createString(Deno.execPath());
+const execPath = createString(Deno.execPath());
 
 export const define = (manager: EnvironmentManager) => {
   manager.create("global");
@@ -201,4 +205,5 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("global", (env) => env.set("false", fls));
   manager.extend("global", (env) => env.set("js-eval", jsEval));
   manager.extend("global", (env) => env.set("exec-path", execPath));
+  manager.extend("global", (env) => env.set("exit", exit));
 };

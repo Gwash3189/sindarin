@@ -106,11 +106,6 @@ const createFunction = (f: LispFunction): LispVal => ({
   value: f,
 });
 
-const createExport = (e: LispExport): LispVal => ({
-  type: "export",
-  value: e,
-});
-
 const createKeyword = (k: string): LispVal => ({
   type: "keyword",
   value: k.startsWith(":") ? k : `:${k}`,
@@ -121,10 +116,7 @@ const createSymbol = (s: string): LispVal => ({
   value: s,
 });
 
-export const createLambdaSymbol = (): LispVal => ({
-  type: "symbol",
-  value: `lambda`,
-});
+export const createLambdaSymbol = (): LispVal => createSymbol("lambda");
 
 const createNull = (): LispVal => ({
   type: "null",
@@ -147,6 +139,16 @@ const isError = (
 const isBoolean = (
   v: LispVal,
 ): v is LispVal & { type: "boolean"; value: boolean } => v.type === "boolean";
+
+const isFalse = (
+  v: LispVal,
+): v is LispVal & { type: "boolean"; value: boolean } =>
+  v.type === "boolean" && v.value === false;
+
+const isTrue = (
+  v: LispVal,
+): v is LispVal & { type: "boolean"; value: boolean } =>
+  v.type === "boolean" && v.value === true;
 
 const isList = (
   v: LispVal,
@@ -173,10 +175,10 @@ const isNull = (v: LispVal): v is LispVal & { type: "null"; value: null } =>
   v.type === "null";
 
 const isLispVal = (v: unknown): v is LispVal => {
-  if (typeof v !== 'object' || v === null) return false;
+  if (typeof v !== "object" || v === null) return false;
   const val = v as LispVal;
-  return 'type' in val && 'value' in val
-}
+  return "type" in val && "value" in val;
+};
 
 // Error types
 class LispError extends Error {
@@ -203,7 +205,6 @@ class EvalError extends LispError {
 export {
   createBoolean,
   createError,
-  createExport,
   createFunction,
   createHash,
   createKeyword,
@@ -215,15 +216,17 @@ export {
   EvalError,
   isBoolean,
   isError,
+  isFalse,
   isFunction,
   isHash,
   isKeyword,
+  isLispVal,
   isList,
   isNull,
-  isLispVal,
   isNumber,
   isString,
   isSymbol,
+  isTrue,
   LispError,
   type LispExport,
   type LispFunction,

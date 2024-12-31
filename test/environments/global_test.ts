@@ -1,7 +1,7 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { ParenSaurus } from "../../src/mod.ts";
 import { expect } from "@std/expect/expect";
-import { createNumber } from "../../src/types.ts";
+import { createNumber, isList } from "../../src/types.ts";
 
 describe("require", () => {
   let lisp: ParenSaurus;

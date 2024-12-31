@@ -1,12 +1,11 @@
 import { EnvironmentManager } from "../evaluator.ts";
-import { parse } from "../parser.ts";
-import { tokenize } from "../tokeniser.ts";
 import {
+createError,
   createFunction,
-  createNumber,
   createList,
   createNull,
-  isLispVal,
+  createNumber,
+  isFunction,
   isList,
   isNull,
   isNumber,
@@ -63,15 +62,17 @@ const element = createFunction((list: LispVal, index: LispVal): LispVal => {
 
 const iterate = createFunction((list: LispVal, callback: LispVal): LispVal => {
   if (list === undefined || isNull(list)) {
-    throw new EvalError('List/iterate first argument must not be null')
+    throw new EvalError("List/iterate first argument must not be null");
   }
 
   if (callback === undefined || isNull(callback)) {
-    throw new EvalError('List.iterate second argument must be callback function')
+    throw new EvalError(
+      "List/iterate second argument must be callback function",
+    );
   }
 
-  const arr = list.value as Array<LispVal>
-  const callbk = callback.value as (...args: LispVal[]) => void
+  const arr = list.value as Array<LispVal>;
+  const callbk = callback.value as (...args: LispVal[]) => void;
 
   if (arr.length === 0) {
     return createNull();
@@ -79,10 +80,62 @@ const iterate = createFunction((list: LispVal, callback: LispVal): LispVal => {
 
   for (let i = 0; i < arr.length; i++) {
     const element = arr[i];
-    callbk(createNumber(i), element)
+    callbk(createNumber(i), element);
   }
 
   return createNull();
+});
+
+const map = createFunction((list: LispVal, callback: LispVal): LispVal => {
+  if (list === undefined || isNull(list)) {
+    return createError("List/map first argument must not be null");
+  }
+
+  if (callback === undefined || isNull(callback)) {
+    return createError(
+      "List/map second argument must be callback function",
+    );
+  }
+
+  const lst = list.value as LispVal[]
+  const callbk = callback.value as (...args: LispVal[]) => LispVal;
+  return createList(lst.map((value, index) => {
+    return callbk(value, createNumber(index))
+  }))
+})
+
+const sort = createFunction((list: LispVal, sorter: LispVal): LispVal => {
+  if (isNull(list) || !isList(list)) return createError('List/sort requires a list')
+  if (sorter !== undefined && (isNull(sorter) || !isFunction(sorter))) return createError('List/sort second parameter must be a function if it\'s provided')
+  if (!isNumber(list.value[0] as LispVal<'number', number>) && sorter === undefined) {
+    return createError('List/sort requires a list of numbers when a sorter function is not provided')
+  }
+
+  const lst = list.value as LispVal[]
+  const func = sorter === undefined ? undefined : sorter.value as (a: LispVal, b: LispVal) => LispVal
+
+  return func === undefined
+    ? createList((lst as Array<LispVal<'number', number>>).sort((a, b) => a.value - b.value))
+    : createList(lst.sort((a, b) => func(a, b).value as number))
+})
+
+const push = createFunction((list: LispVal, value: LispVal): LispVal => {
+  if (isNull(list) || !isList(list)) return createError('List/push requires a list')
+  if (value === undefined) return createError('List/value requires a second parameter')
+
+  const lst = list.value
+
+  lst.push(value)
+
+  return createList(lst)
+})
+
+const reduce = createFunction((list: LispVal, startValue: LispVal, func: LispVal) => {
+  const lst = list.value as Array<LispVal>
+  const f = func.value as (acc: unknown, current: unknown) => unknown
+
+  const result = lst.reduce(f, startValue) as LispVal
+  return result
 })
 
 export const define = (manager: EnvironmentManager) => {
@@ -91,7 +144,11 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("List", (env) => env.set("head", head));
   manager.extend("List", (env) => env.set("tail", tail));
   manager.extend("List", (env) => env.set("concat", concat));
-  manager.extend("List", (env) => env.set("element", element));
+  manager.extend("List", (env) => env.set("at", element));
   manager.extend("List", (env) => env.set("iterate", iterate));
   manager.extend("List", (env) => env.set("each", iterate));
+  manager.extend("List", (env) => env.set("map", map));
+  manager.extend("List", (env) => env.set("sort", sort))
+  manager.extend("List", (env) => env.set("push", push))
+  manager.extend("List", (env) => env.set("reduce", reduce))
 };

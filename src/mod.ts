@@ -2,7 +2,6 @@
 import { tokenize } from "./tokeniser.ts";
 import { parse } from "./parser.ts";
 import {
-  createGlobalEnv,
   Environment,
   environments,
   evaluate,
@@ -35,7 +34,7 @@ export class ParenSaurus {
 
   // Reset the environment
   resetEnv(): void {
-    const env = createGlobalEnv();
+    const env = new Environment()
     environments.set("global", env);
     this.env = env;
   }

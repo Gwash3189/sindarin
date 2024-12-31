@@ -2,32 +2,29 @@ import { parse, Parser } from "./parser.ts";
 import { tokenize } from "./tokeniser.ts";
 import {
   createBoolean,
-  createError,
   createFunction,
-  createHash,
   createLambdaSymbol,
   createList,
   createNull,
-  createNumber,
-  createString,
   EvalError,
   isBoolean,
-  isError,
   isFunction,
   isHash,
   isKeyword,
   isList,
   isNumber,
-  isLispVal,
   isString,
   isSymbol,
   LispFunction,
-  LispType,
   LispVal,
 } from "./types.ts";
+
 import * as Core from "./environments/core.ts";
 import * as Hash from "./environments/hash.ts";
 import * as List from "./environments/list.ts";
+import * as String from "./environments/string.ts";
+import * as File from "./environments/file.ts";
+import * as Integer from "./environments/integer.ts";
 import * as Global from "./environments/global.ts";
 
 // Environment class
@@ -38,6 +35,12 @@ export class Environment {
   constructor(parent: Environment | null = null) {
     this.vars = new Map();
     this.parent = parent;
+  }
+
+  evaluate(lisp: string, env: Environment): LispVal {
+    const tokens = tokenize(lisp);
+    const ast = parse(tokens);
+    return evaluate(ast, env);
   }
 
   get<T = LispVal>(name: string): T {
@@ -68,7 +71,7 @@ export class EnvironmentManager {
 
   constructor() {
     this.environments = new Map<string, Environment>();
-    this.environments.set("global", createGlobalEnv());
+    this.environments.set("global", new Environment());
   }
 
   private findParent(name: string): Environment | null {
@@ -130,7 +133,7 @@ export class EnvironmentManager {
     return this.environments.get(name);
   }
 
-  set(name: string | string[], env: Environment = createGlobalEnv()): void {
+  set(name: string | string[], env: Environment = new Environment()): void {
     if (Array.isArray(name)) {
       name = EnvironmentManager.furl(name);
     }
@@ -139,7 +142,7 @@ export class EnvironmentManager {
   }
 
   reset(name: string): void {
-    this.environments.set(name, createGlobalEnv());
+    this.environments.set(name, new Environment());
   }
 
   delete(name: string): boolean {
@@ -195,6 +198,7 @@ export class Evaluator {
             return this.evaluateDefine(rest, env);
           case "defn":
             return this.evaluateDefn(rest, env);
+          case "fn":
           case "lambda":
             return this.evaluateLambda(rest, env);
           case "begin":
@@ -207,6 +211,7 @@ export class Evaluator {
             return this.evaluateOr(rest, env);
           case "require":
             return this.evaluateRequire(rest, env);
+
         }
       }
 
@@ -347,14 +352,10 @@ ${err.message}`);
 
       // Bind parameters to arguments
       for (let i = 0; i < parameters.length; i++) {
-        let arg = funcArgs[i] !== undefined ? funcArgs[i] : createNull();
-        const param = parameters[i]
+        const arg = funcArgs[i] !== undefined ? funcArgs[i] : createNull();
+        const param = parameters[i];
 
-        // if (!isLispVal(arg)) {
-        //   arg = parse(tokenize(arg.toString()))
-        // }
-
-        localEnv.set(param, arg  as LispVal);
+        localEnv.set(param, arg as LispVal);
       }
       // Execute body expressions sequentially
       let result = createNull();
@@ -483,13 +484,9 @@ function setupNamespaces() {
   Core.define(environments);
   Hash.define(environments);
   List.define(environments);
-}
-
-// Create initial environment with basic operations
-export function createGlobalEnv(): Environment {
-  const env = new Environment();
-
-  return env;
+  String.define(environments);
+  File.define(environments);
+  Integer.define(environments);
 }
 
 // Convenience function for evaluation
@@ -497,5 +494,7 @@ export function evaluate(exp: LispVal, env: Environment): LispVal {
   const evaluator = new Evaluator();
   return evaluator.evaluate(exp, env);
 }
+
+
 
 setupNamespaces();
