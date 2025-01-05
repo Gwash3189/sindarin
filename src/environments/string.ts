@@ -1,6 +1,6 @@
 import { EnvironmentManager } from "../evaluator.ts";
 import {
-createError,
+  createError,
   createFunction,
   createList,
   createNull,
@@ -15,8 +15,8 @@ const trim = createFunction((str: LispVal): LispVal => {
     throw createError("String/trim needs one argument that is a string");
   }
 
-  return createString(str.value!.trim())
-})
+  return createString(str.value!.trim());
+});
 
 const split = createFunction((str: LispVal, by: LispVal): LispVal => {
   if (str === undefined || by === undefined) {
@@ -36,16 +36,24 @@ const split = createFunction((str: LispVal, by: LispVal): LispVal => {
   return createList(result);
 });
 
-const replace = createFunction((str: LispVal, pattern: LispVal, replacement: LispVal): LispVal => {
-  if ((!isString(str) || isNull(str)) && (!isString(pattern) || isNull(pattern)) && (!isString(replacement) || isNull(replacement))) return createError(`String/replace three strings as arguments`)
-  if (str === undefined || pattern === undefined || replacement === undefined) return createError(`String/trim requires three string arguments`)
+const replace = createFunction(
+  (str: LispVal, pattern: LispVal, replacement: LispVal): LispVal => {
+    if (
+      (!isString(str) || isNull(str)) &&
+      (!isString(pattern) || isNull(pattern)) &&
+      (!isString(replacement) || isNull(replacement))
+    ) return createError(`String/replace three strings as arguments`);
+    if (
+      str === undefined || pattern === undefined || replacement === undefined
+    ) return createError(`String/trim requires three string arguments`);
 
-  const replaceable = str.value as string
-  const ptrn = pattern.value as string
-  const toUse = replacement.value as string
+    const replaceable = str.value as string;
+    const ptrn = pattern.value as string;
+    const toUse = replacement.value as string;
 
-  return createString(replaceable.replace(ptrn, toUse))
-})
+    return createString(replaceable.replace(ptrn, toUse));
+  },
+);
 
 export const define = (manager: EnvironmentManager) => {
   manager.create("String");

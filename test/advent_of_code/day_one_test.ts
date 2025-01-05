@@ -1,17 +1,17 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { ParenSaurus } from "../../src/mod.ts";
+import { Sindarin } from "../../src/mod.ts";
 import { expect } from "@std/expect/expect";
 import { createNumber } from "../../src/types.ts";
 
 describe("Advent Of Code", () => {
-  let lisp: ParenSaurus;
+  let lisp: Sindarin;
 
   beforeEach(() => {
-    lisp = new ParenSaurus();
+    lisp = new Sindarin();
   });
 
-  describe('when it is day one', () => {
-    it('can complete the challenge', () => {
+  describe("when it is day one", () => {
+    it("can complete the challenge", () => {
       expect(lisp.evaluate(
         `
         (begin
@@ -44,7 +44,7 @@ describe("Advent Of Code", () => {
           )
           (begin
             (List/each number-tuples
-              (fn (index number-tuple)
+              (fn (number-tuple index)
                 (begin
                   (List/push left-list (List/at number-tuple 0))
                   (List/push right-list (List/at number-tuple 1))
@@ -66,8 +66,8 @@ describe("Advent Of Code", () => {
             )
             (List/reduce distances 0 (fn (acc current) (+ acc current)))
           )
-        )`
-      )).toEqual(createNumber(11))
-    })
-  })
-})
+        )`,
+      )).toEqual(createNumber(11));
+    });
+  });
+});

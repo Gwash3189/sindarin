@@ -1,13 +1,13 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { ParenSaurus } from "../../src/mod.ts";
+import { Sindarin } from "../../src/mod.ts";
 import { expect } from "@std/expect/expect";
-import { createHash, createList, createNull, createNumber, isList } from "../../src/types.ts";
+import { createBoolean } from "../../src/types.ts";
 
 describe("List", () => {
-  let lisp: ParenSaurus;
+  let lisp: Sindarin;
 
   beforeEach(() => {
-    lisp = new ParenSaurus();
+    lisp = new Sindarin();
   });
 
   describe("at", () => {
@@ -32,7 +32,7 @@ describe("List", () => {
   });
 
   describe("map", () => {
-    it('returns a new array with the returned values', () => {
+    it("returns a new array with the returned values", () => {
       expect(lisp.evaluate(`
         (inspect
           (List/map
@@ -43,18 +43,28 @@ describe("List", () => {
             )
           )
         )
-      `)).toEqual(lisp.evaluate(`(List/create 2 3 4)`))
-    })
-  })
+      `)).toEqual(lisp.evaluate(`(List/create 2 3 4)`));
+    });
+  });
 
-  describe('sort', () => {
-    describe('when given an sortable list', () => {
-      it('sorts it according to deno Array.sort', () => {
+  describe("every?", () => {
+    describe("when every member of the list passes the predicate", () => {
+      it("returns true", () => {
+        expect(lisp.evaluate(`
+          (List/every? (List/create 2 4 6) Integer/even?)
+        `)).toEqual(lisp.evaluate("true"));
+      });
+    });
+  });
+
+  describe("sort", () => {
+    describe("when given an sortable list", () => {
+      it("sorts it according to deno Array.sort", () => {
         expect(lisp.evaluate(`(List/sort (List/create 4 3 5 3 9 3))`))
-          .toEqual(lisp.evaluate(`(List/create 3 3 3 4 5 9)`))
-      })
-    })
-  })
+          .toEqual(lisp.evaluate(`(List/create 3 3 3 4 5 9)`));
+      });
+    });
+  });
 
   describe("each", () => {
     it("iterates over a list", () => {
@@ -65,12 +75,12 @@ describe("List", () => {
       lisp.evaluate(
         `(List/each
           list
-          (fn (index) (Hash/set store index (+ index 1))
+          (fn (_ index) (Hash/set store index (+ index 1))
           ))`,
       );
 
       expect(lisp.evaluate(`(inspect store)`)).toEqual(
-          lisp.evaluate(`(inspect #{"0" 1 "1" 2 "2" 3 })`)
+        lisp.evaluate(`(inspect #{"0" 1 "1" 2 "2" 3 })`),
       );
     });
   });

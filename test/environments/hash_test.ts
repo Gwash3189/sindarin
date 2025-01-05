@@ -1,5 +1,5 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { ParenSaurus } from "../../src/mod.ts";
+import { Sindarin } from "../../src/mod.ts";
 import {
   createHash,
   createNull,
@@ -10,10 +10,10 @@ import { expect } from "@std/expect/expect";
 
 describe("Hash", () => {
   describe("set", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should set a value in a hash", () => {
@@ -26,10 +26,10 @@ describe("Hash", () => {
   });
 
   describe("get", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("gets a value from a hash", () => {
@@ -48,10 +48,10 @@ describe("Hash", () => {
   });
 
   describe("create", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("creates a hash", () => {

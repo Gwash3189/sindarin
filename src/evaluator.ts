@@ -12,10 +12,13 @@ import {
   isHash,
   isKeyword,
   isList,
+  isMacro,
+  isNull,
   isNumber,
   isString,
   isSymbol,
   LispFunction,
+  MacroFunction,
   LispVal,
 } from "./types.ts";
 
@@ -26,21 +29,22 @@ import * as String from "./environments/string.ts";
 import * as File from "./environments/file.ts";
 import * as Integer from "./environments/integer.ts";
 import * as Global from "./environments/global.ts";
+import { createMacro } from "./types.ts";
 
 // Environment class
 export class Environment {
   private vars: Map<string, LispVal>;
-  private parent: Environment | null;
+  public parent: Environment | null;
 
   constructor(parent: Environment | null = null) {
     this.vars = new Map();
     this.parent = parent;
   }
 
-  evaluate(lisp: string, env: Environment): LispVal {
+  evaluate(lisp: string): LispVal {
     const tokens = tokenize(lisp);
     const ast = parse(tokens);
-    return evaluate(ast, env);
+    return evaluate(ast, this);
   }
 
   get<T = LispVal>(name: string): T {
@@ -211,7 +215,25 @@ export class Evaluator {
             return this.evaluateOr(rest, env);
           case "require":
             return this.evaluateRequire(rest, env);
+          case "defmacro":
+            return this.evaluateDefMacro(rest, env)
+        }
 
+        try {
+          const resolved = env.get(first.value as string);
+          console.log(resolved)
+          if (isMacro(resolved)) {
+            console.log('is macro')
+            // Macros receive unevaluated arguments
+            const expanded = (resolved.value as MacroFunction)(rest, env);
+            console.log('expanded', expanded)
+            // The expansion is then evaluated
+            return this.evaluate(expanded, env);
+          }
+        } catch (e) {
+          console.error(e)
+          console.log('error!')
+          // If symbol isn't found, continue to function application
         }
       }
 
@@ -221,12 +243,12 @@ export class Evaluator {
         throw new EvalError(`${JSON.stringify(first.value)} is not a function`);
       }
 
-      const evaledArgs = [];
+      const evaluatedArguments = [];
       for (const arg of rest) {
-        evaledArgs.push(this.evaluate(arg, env));
+        evaluatedArguments.push(this.evaluate(arg, env));
       }
       // Apply function with evaluated arguments
-      return (proc.value as LispFunction)(...evaledArgs);
+      return (proc.value as LispFunction)(...evaluatedArguments);
     }
 
     throw new EvalError(`Cannot evaluate expression: ${JSON.stringify(exp)}`);
@@ -250,6 +272,50 @@ export class Evaluator {
       return nsEnv.get(func);
     }
     return env.get(symbolStr);
+  }
+
+  private evaluateDefMacro(args: LispVal[], env: Environment): LispVal {
+    if (args.length < 3) {
+      throw new EvalError("defmacro requires at least three arguments: name, parameter list, and body");
+    }
+
+    const [name, params, ...body] = args;
+
+    if (!isSymbol(name)) {
+      throw new EvalError("Macro name must be a symbol");
+    }
+
+    if (!isList(params)) {
+      throw new EvalError("Macro parameters must be a list");
+    }
+
+    // Create the macro function
+    const macro = createMacro((macroArgs: LispVal[], macroEnv: Environment): LispVal => {
+      // Create new environment for macro execution
+      const localEnv = new Environment(macroEnv);
+
+      // Bind parameters to arguments
+      const parameters = (params.value as LispVal[]).map(p => {
+        if (!isSymbol(p)) {
+          throw new EvalError("Macro parameters must be symbols");
+        }
+        return p.value as string;
+      });
+
+      for (let i = 0; i < parameters.length; i++) {
+        localEnv.set(parameters[i], macroArgs[i] || createNull());
+      }
+
+      // Execute body expressions
+      let result = createNull();
+      for (const expr of body) {
+        result = this.evaluate(expr, localEnv);
+      }
+      return result;
+    });
+
+    // Store macro in environment
+    return env.set(name.value as string, macro);
   }
 
   private evaluateRequire(args: LispVal[], env: Environment): LispVal {
@@ -289,20 +355,75 @@ ${err.message}`);
     return args[0];
   }
 
+  private evaluateQuasiQuote(args: LispVal[], env: Environment): LispVal {
+    if (args.length !== 1) {
+      throw new EvalError("Quasiquote requires exactly one argument");
+    }
+
+    return this.quasiquote(args[0], env, 0);
+  }
+
+  private quasiquote(exp: LispVal, env: Environment, depth: number): LispVal {
+    if (!isList(exp)) {
+      return exp;
+    }
+
+    const elements = exp.value as LispVal[];
+    if (elements.length === 0) {
+      return exp;
+    }
+
+    const first = elements[0];
+    if (isSymbol(first)) {
+      switch (first.value) {
+        case "unquote":
+          if (depth === 0) {
+            if (elements.length !== 2) {
+              throw new EvalError("Unquote requires exactly one argument");
+            }
+            return this.evaluate(elements[1], env);
+          }
+          break;
+        case "quasiquote":
+          return this.quasiquote(elements[1], env, depth + 1);
+      }
+    }
+
+    // Handle unquote-splicing
+    if (elements.length >= 2 && isSymbol(first) && first.value === "unquote-splicing") {
+      if (depth === 0) {
+        const spliced = this.evaluate(elements[1], env);
+        if (!isList(spliced)) {
+          throw new EvalError("Unquote-splicing requires a list");
+        }
+        return createList([...spliced.value as LispVal[]]);
+      }
+    }
+
+    // Recursively process each element
+    const processed = elements.map(el => this.quasiquote(el, env, depth));
+    return createList(processed);
+  }
+
   private evaluateIf(args: LispVal[], env: Environment): LispVal {
-    if (args.length !== 3) {
-      throw new EvalError("If requires exactly three arguments");
+    if (args.length < 2) {
+      throw new EvalError("If requires a minimum of 2 arguments");
     }
 
     const [condition, consequent, alternative] = args;
     const test = this.evaluate(condition, env);
 
-    // In Lisp, only #f (false) is falsy, everything else is truthy
-    const shouldTakeElse = isBoolean(test) && test.value === false;
+    // In Lisp, only false & null are falsey, everything else is truthy
+    const shouldTakeElse = (isBoolean(test) && test.value === false) ||
+      isNull(test);
 
-    return shouldTakeElse
-      ? this.evaluate(alternative, env)
-      : this.evaluate(consequent, env);
+    if (alternative !== undefined) {
+      return shouldTakeElse
+        ? this.evaluate(alternative, env)
+        : this.evaluate(consequent, env);
+    }
+
+    return this.evaluate(consequent, env);
   }
 
   private evaluateDefine(args: LispVal[], env: Environment): LispVal {
@@ -330,6 +451,7 @@ ${err.message}`);
     ], env);
   }
 
+  // In evaluator.ts, add apply to global environment and modify evaluateLambda to handle rest parameters
   private evaluateLambda(args: LispVal[], env: Environment): LispVal {
     if (args.length < 2) {
       throw new EvalError("Lambda requires at least two arguments");
@@ -340,26 +462,46 @@ ${err.message}`);
       throw new EvalError("Lambda parameters must be a list of symbols");
     }
 
-    const parameters = (params.value as LispVal[]).map((
-      p,
-    ) => (p.value as string));
-    const bodyExpressions = body; // Capture body expressions
+    const parameters = params.value as LispVal[];
+
+    // Find rest parameter (if any)
+    const restParamIndex = parameters.findIndex((p) =>
+      isSymbol(p) && (p.value as string).startsWith("...")
+    );
+
+    // Validate rest parameter is last if present
+    if (restParamIndex !== -1 && restParamIndex !== parameters.length - 1) {
+      throw new EvalError("Rest parameter must be the last parameter");
+    }
 
     // Create function that captures both the environment and body
-    return createFunction((...funcArgs: LispVal[] | {}[]): LispVal => {
+    return createFunction((...funcArgs: LispVal[]): LispVal => {
       // Create new environment for function execution
       const localEnv = new Environment(env);
 
-      // Bind parameters to arguments
-      for (let i = 0; i < parameters.length; i++) {
-        const arg = funcArgs[i] !== undefined ? funcArgs[i] : createNull();
-        const param = parameters[i];
+      // Handle regular parameters
+      const regularParams = restParamIndex === -1
+        ? parameters
+        : parameters.slice(0, restParamIndex);
 
-        localEnv.set(param, arg as LispVal);
+      for (let i = 0; i < regularParams.length; i++) {
+        localEnv.set(
+          regularParams[i].value as string,
+          funcArgs[i] || createNull(),
+        );
       }
+
+      // Handle rest parameter if present
+      if (restParamIndex !== -1) {
+        const restParam = parameters[restParamIndex];
+        const restParamName = (restParam.value as string).slice(3); // Remove "..." prefix
+        const restArgs = funcArgs.slice(regularParams.length);
+        localEnv.set(restParamName, createList(restArgs));
+      }
+
       // Execute body expressions sequentially
       let result = createNull();
-      for (const expr of bodyExpressions) {
+      for (const expr of body) {
         result = this.evaluate(expr, localEnv);
       }
       return result;
@@ -386,12 +528,11 @@ ${err.message}`);
       throw new EvalError(`Namespace ${ns} must start with uppercase`);
     }
 
-    if (env.has(ns) === false) {
+    if (environments.has(ns) === false) {
       environments.create(ns);
     }
 
-    const nsEnv = environments.create(ns);
-
+    const nsEnv = environments.get(ns)!;
     for (const exp of body) {
       this.evaluate(exp, nsEnv);
     }
@@ -494,7 +635,5 @@ export function evaluate(exp: LispVal, env: Environment): LispVal {
   const evaluator = new Evaluator();
   return evaluator.evaluate(exp, env);
 }
-
-
 
 setupNamespaces();

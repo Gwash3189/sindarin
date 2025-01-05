@@ -1,0 +1,67 @@
+{
+  "scriptId": "338",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/src/environments/string.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 1656, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        { "startOffset": 131, "endOffset": 305, "count": 1 },
+        { "startOffset": 183, "endOffset": 262, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        { "startOffset": 337, "endOffset": 840, "count": 14 },
+        { "startOffset": 374, "endOffset": 393, "count": 13 },
+        { "startOffset": 395, "endOffset": 461, "count": 2 },
+        { "startOffset": 461, "endOffset": 481, "count": 12 },
+        { "startOffset": 481, "endOffset": 503, "count": 1 },
+        { "startOffset": 503, "endOffset": 525, "count": 11 },
+        { "startOffset": 525, "endOffset": 541, "count": 10 },
+        { "startOffset": 543, "endOffset": 615, "count": 2 },
+        { "startOffset": 615, "endOffset": 703, "count": 9 },
+        { "startOffset": 703, "endOffset": 749, "count": 1 },
+        { "startOffset": 749, "endOffset": 839, "count": 8 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        { "startOffset": 874, "endOffset": 1405, "count": 1 },
+        { "startOffset": 943, "endOffset": 985, "count": 0 },
+        { "startOffset": 986, "endOffset": 1036, "count": 0 },
+        { "startOffset": 1038, "endOffset": 1102, "count": 0 },
+        { "startOffset": 1182, "endOffset": 1248, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "define",
+      "ranges": [{ "startOffset": 1430, "endOffset": 1654, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1498, "endOffset": 1528, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1558, "endOffset": 1592, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1622, "endOffset": 1650, "count": 1 }],
+      "isBlockCoverage": true
+    }
+  ]
+}

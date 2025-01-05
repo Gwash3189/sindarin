@@ -1,25 +1,17 @@
 // main.ts
 import { tokenize } from "./tokeniser.ts";
 import { parse } from "./parser.ts";
-import {
-  Environment,
-  environments,
-  evaluate,
-} from "./evaluator.ts";
+import { Environment, environments, evaluate } from "./evaluator.ts";
 import { LispVal } from "./types.ts";
 
-export class ParenSaurus {
-  public env: Environment;
-
-  constructor() {
-    this.env = environments.get("global")!;
+export class Sindarin {
+  private env() {
+    return environments.get("global")!;
   }
 
   // Evaluates a string of Lisp code and returns the result
   evaluate(program: string): LispVal {
-    const tokens = tokenize(program);
-    const ast = parse(tokens);
-    return evaluate(ast, this.env);
+    return evaluate(parse(tokenize(program)), this.env());
   }
 
   // Evaluates multiple expressions
@@ -29,17 +21,15 @@ export class ParenSaurus {
 
   // Gets a value from the environment
   getEnvValue(name: string): LispVal {
-    return this.env.get(name);
+    return this.env().get(name);
   }
 
   // Reset the environment
   resetEnv(): void {
-    const env = new Environment()
-    environments.set("global", env);
-    this.env = env;
+    environments.reset("global");
   }
 }
 
 // Example usage:
-// const lisp = new ParenSaurus();
+// const lisp = new Sindarin();
 // const result = lisp.evaluate("(+ 1 2 3)");

@@ -1,17 +1,17 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { ParenSaurus } from "../../src/mod.ts";
+import { Sindarin } from "../../src/mod.ts";
 import { createList, createString } from "../../src/types.ts";
 import { expect } from "@std/expect/expect";
 
 describe("String", () => {
-  let lisp: ParenSaurus;
+  let lisp: Sindarin;
 
   beforeEach(() => {
-    lisp = new ParenSaurus();
+    lisp = new Sindarin();
   });
 
-  describe('trim', () => {
-    it('trims the leading and trailing whitespace from a string', () => {
+  describe("trim", () => {
+    it("trims the leading and trailing whitespace from a string", () => {
       expect(lisp.evaluate(
         `
           (List/map
@@ -23,7 +23,7 @@ describe("String", () => {
 3   9
 3   3
 ") "\n") (fn (item) (String/split item "   ")))
-        `
+        `,
       )).toEqual(lisp.evaluate(`
         (inspect
           (List/create
@@ -34,9 +34,9 @@ describe("String", () => {
             (List/create "3" "9")
             (List/create "3" "3")
           )
-        )`))
-    })
-  })
+        )`));
+    });
+  });
 
   describe("split", () => {
     it("splits the string by the provided value", () => {
@@ -91,10 +91,11 @@ describe("String", () => {
   });
 
   describe("replace", () => {
-    it('replaces the character sequence within the provided string', () => {
-      expect(lisp.evaluate(`(String/replace "(define test 42)\n" "\n" "")`)).toEqual(
-        createString("(define test 42)"),
-      );
-    })
-  })
+    it("replaces the character sequence within the provided string", () => {
+      expect(lisp.evaluate(`(String/replace "(define test 42)\n" "\n" "")`))
+        .toEqual(
+          createString("(define test 42)"),
+        );
+    });
+  });
 });

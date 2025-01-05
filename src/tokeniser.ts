@@ -7,10 +7,12 @@ import {
   KeywordToken,
   LeftParenToken,
   NumberToken,
+  QuasiquoteToken,
   QuoteToken,
   RightParenToken,
   StringToken,
   SymbolToken,
+  UnquoteToken,
   WhiteSpaceToken,
 } from "./tokens.ts";
 
@@ -137,7 +139,7 @@ export class Tokenizer {
     return new SymbolToken(result);
   }
 
-  private peek(): string | null {
+  public peek(): string | null {
     return this.position + 1 < this.input.length
       ? this.input[this.position + 1]
       : null;
@@ -206,6 +208,16 @@ export class Tokenizer {
 
       if (HashEndToken.test(this.currentChar)) {
         HashEndToken.execute(this);
+        continue;
+      }
+
+      if (QuasiquoteToken.test(this.currentChar)) {
+        QuasiquoteToken.execute(this);
+        continue;
+      }
+
+      if (UnquoteToken.test(this.currentChar)) {
+        UnquoteToken.execute(this);
         continue;
       }
 

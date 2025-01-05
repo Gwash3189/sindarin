@@ -8,17 +8,17 @@ import {
   createSymbol,
   LispVal,
 } from "../src/types.ts";
-import { ParenSaurus } from "../src/mod.ts";
+import { Sindarin } from "../src/mod.ts";
 import { createBoolean } from "../src/types.ts";
 
 // integration.test.ts
 
-describe("ParenSaurus Integration Tests", () => {
+describe("Sindarin Integration Tests", () => {
   describe("Language Features", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should support all core language features", () => {
@@ -104,7 +104,7 @@ describe("ParenSaurus Integration Tests", () => {
       lisp.evaluate(`
         (define filter
           (lambda (predicate lst)
-            (if (Core/null? lst)
+            (if (= (List/count lst) 0)
                 (List/create)
                 (if (predicate (List/head lst))
                     (List/concat (List/head lst) (filter predicate (List/tail lst)))
@@ -133,10 +133,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Comments", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("ignores comments", () => {
@@ -149,10 +149,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("js-eval", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should evaluate JS code", () => {
@@ -177,10 +177,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Core/error?", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should return true for error values", () => {
@@ -205,28 +205,22 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("and special form", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     describe("defn", () => {
-      let result: LispVal;
-
       beforeEach(() => {
-        result = lisp.evaluate("(defn add (x y) (+ x y))");
+        lisp.evaluate("(defn add (x y) (+ x y))");
       });
 
       it("defines a function", () => {
-        expect(result).toHaveProperty(
-          "type",
-          lisp.env.get("add").type,
+        expect(lisp.evaluate(`(Core/type? add)`)).toEqual(
+          createString("function"),
         );
-      });
-
-      it("attaches the correct body to the function", () => {
-        expect(result).toHaveProperty("value", lisp.env.get("add").value);
+        expect(lisp.evaluate(`(add 1 1)`)).toEqual(createNumber(2));
       });
     });
 
@@ -273,10 +267,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("print", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should return the value", () => {
@@ -313,10 +307,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("or special form", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should return false for empty or", () => {
@@ -374,10 +368,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Predicate Function Names", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     describe("when defining predicate functions", () => {
@@ -436,10 +430,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Arithmetic Operations", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     describe("addition", () => {
@@ -537,10 +531,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("#{} syntax", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     describe("when defining a hash", () => {
@@ -588,10 +582,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("namespace", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should allow defining functions in namespaces", () => {
@@ -616,10 +610,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Variable Definitions", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should define and use variables", () => {
@@ -643,10 +637,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Functions", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should define and call simple functions", () => {
@@ -682,10 +676,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("List Operations", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should get the head of a list", () => {
@@ -714,10 +708,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Conditionals", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should evaluate true conditions", () => {
@@ -738,10 +732,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Error Handling", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("should handle syntax errors", () => {
@@ -770,10 +764,10 @@ describe("ParenSaurus Integration Tests", () => {
   });
 
   describe("Complex Programs", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     describe("Factorial", () => {

@@ -1,18 +1,18 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { ParenSaurus } from "../../src/mod.ts";
+import { Sindarin } from "../../src/mod.ts";
 import { expect } from "@std/expect/expect";
 import { createNumber, isList } from "../../src/types.ts";
 
 describe("require", () => {
-  let lisp: ParenSaurus;
+  let lisp: Sindarin;
 
   beforeEach(() => {
-    lisp = new ParenSaurus();
+    lisp = new Sindarin();
   });
 
   it("loads and evaluate a file", () => {
     lisp.evaluate('(require "./test/fixtures/test.lisp")');
-    expect(lisp.env.get("test")).toEqual(createNumber(42));
+    expect(lisp.evaluate(`(inspect test)`)).toEqual(createNumber(42));
   });
 
   it("throws an error if the file does not exist", () => {

@@ -1,3 +1,5 @@
+import { Environment } from "./evaluator.ts";
+
 export const SYMBOL_CHARS = /[a-zA-Z0-9+\-*/<>=!?._\%]/;
 
 // Token types for the lexer
@@ -12,6 +14,9 @@ enum TokenType {
   HASH_START = "HASH_START",
   HASH_END = "HASH_END",
   COMMENT = "COMMENT",
+  QUASIQUOTE = "QUASIQUOTE",
+  UNQUOTE = "UNQUOTE",
+  UNQUOTE_SPLICING = "UNQUOTE_SPLICING"
 }
 
 export const TokenValues = {
@@ -25,6 +30,9 @@ export const TokenValues = {
   [TokenType.NUMBER]: "",
   [TokenType.STRING]: '"',
   [TokenType.COMMENT]: ";",
+  [TokenType.QUASIQUOTE]: '`',
+  [TokenType.UNQUOTE]: ',',
+  [TokenType.UNQUOTE_SPLICING]: '@',
 } as const;
 
 // Token interface for lexer output
@@ -45,6 +53,7 @@ export type LispType =
   | "symbol"
   | "null"
   | "error"
+  | "macro"
   | "hash";
 
 export type LispValue =
@@ -55,11 +64,15 @@ export type LispValue =
   | LispVal[]
   | LispExport
   | LispHash
+  | MacroFunction
   | null;
 interface LispVal<T = LispType, V = LispValue> {
   type: T;
   value: V;
 }
+
+// Function type
+type MacroFunction = (args: LispVal[], env: Environment) => LispVal;
 
 // Function type
 type LispFunction = (...args: LispVal[]) => LispVal;
@@ -99,6 +112,11 @@ const createHash = (h: LispHash): LispVal => ({
 const createList = (l: LispVal[]): LispVal => ({
   type: "list",
   value: l,
+});
+
+const createMacro = (f: MacroFunction): LispVal => ({
+  type: "macro",
+  value: f,
 });
 
 const createFunction = (f: LispFunction): LispVal => ({
@@ -159,6 +177,11 @@ const isFunction = (
 ): v is LispVal & { type: "function"; value: LispFunction } =>
   v.type === "function";
 
+const isMacro = (
+  v: LispVal,
+): v is LispVal & { type: "macro"; value: LispFunction } =>
+  v.type === "macro";
+
 const isKeyword = (
   v: LispVal,
 ): v is LispVal & { type: "keyword"; value: string } => v.type === "keyword";
@@ -213,11 +236,13 @@ export {
   createNumber,
   createString,
   createSymbol,
+  createMacro,
   EvalError,
   isBoolean,
   isError,
   isFalse,
   isFunction,
+  isMacro,
   isHash,
   isKeyword,
   isLispVal,
@@ -230,6 +255,7 @@ export {
   LispError,
   type LispExport,
   type LispFunction,
+  type MacroFunction,
   type LispVal,
   ParseError,
   type Token,

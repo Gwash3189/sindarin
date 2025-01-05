@@ -1,0 +1,46 @@
+{
+  "scriptId": "341",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/src/environments/string.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 1656, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 131, "endOffset": 305, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 337, "endOffset": 840, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 874, "endOffset": 1405, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "define",
+      "ranges": [{ "startOffset": 1430, "endOffset": 1654, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1498, "endOffset": 1528, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1558, "endOffset": 1592, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1622, "endOffset": 1650, "count": 1 }],
+      "isBlockCoverage": true
+    }
+  ]
+}

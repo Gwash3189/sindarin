@@ -1,0 +1,60 @@
+{
+  "scriptId": "336",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/src/environments/hash.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 1584, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 116, "endOffset": 369, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        { "startOffset": 402, "endOffset": 987, "count": 2 },
+        { "startOffset": 466, "endOffset": 547, "count": 1 },
+        { "startOffset": 549, "endOffset": 619, "count": 0 },
+        { "startOffset": 619, "endOffset": 688, "count": 1 },
+        { "startOffset": 688, "endOffset": 958, "count": 3 },
+        { "startOffset": 770, "endOffset": 858, "count": 0 },
+        { "startOffset": 893, "endOffset": 904, "count": 0 },
+        { "startOffset": 958, "endOffset": 986, "count": 1 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        { "startOffset": 1017, "endOffset": 1349, "count": 3 },
+        { "startOffset": 1082, "endOffset": 1145, "count": 0 },
+        { "startOffset": 1171, "endOffset": 1234, "count": 0 },
+        { "startOffset": 1267, "endOffset": 1278, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "define",
+      "ranges": [{ "startOffset": 1374, "endOffset": 1582, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1438, "endOffset": 1464, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1492, "endOffset": 1524, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 1552, "endOffset": 1578, "count": 1 }],
+      "isBlockCoverage": true
+    }
+  ]
+}

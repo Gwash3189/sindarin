@@ -1,14 +1,14 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { ParenSaurus } from "../../src/mod.ts";
+import { Sindarin } from "../../src/mod.ts";
 import { createList, createString } from "../../src/types.ts";
 import { expect } from "@std/expect/expect";
 
 describe("File", () => {
   describe("read-text-file", () => {
-    let lisp: ParenSaurus;
+    let lisp: Sindarin;
 
     beforeEach(() => {
-      lisp = new ParenSaurus();
+      lisp = new Sindarin();
     });
 
     it("reads the file at the provided path", () => {

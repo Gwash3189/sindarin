@@ -131,15 +131,21 @@ const lessThan = createFunction((...args: LispVal[]): LispVal => {
 const makeNull = createNull();
 
 const exit = createFunction((message: LispVal): LispVal => {
-  throw new LispError(message.value as string)
-})
+  throw new LispError(message.value as string);
+});
 
 const inspect = createFunction((arg: LispVal): LispVal => {
   return arg;
 });
 
 const print = createFunction((arg: LispVal): LispVal => {
-  return (inspect.value as (arg: LispVal) => LispVal)(arg);
+  console.log(arg);
+  return arg;
+});
+
+const pp = createFunction((arg: LispVal): LispVal => {
+  console.log(arg.value);
+  return arg;
 });
 
 const not = createFunction((arg: LispVal): LispVal => {
@@ -200,10 +206,15 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("global", (env) => env.set("null", makeNull));
   manager.extend("global", (env) => env.set("inspect", inspect));
   manager.extend("global", (env) => env.set("print", print));
+  manager.extend("global", (env) => env.set("pp", pp));
   manager.extend("global", (env) => env.set("not", not));
   manager.extend("global", (env) => env.set("true", tru));
   manager.extend("global", (env) => env.set("false", fls));
   manager.extend("global", (env) => env.set("js-eval", jsEval));
   manager.extend("global", (env) => env.set("exec-path", execPath));
   manager.extend("global", (env) => env.set("exit", exit));
+  manager.extend(
+    "global",
+    (env) => env.evaluate(`(require "./src/environments/lisp/global.lisp")`),
+  );
 };

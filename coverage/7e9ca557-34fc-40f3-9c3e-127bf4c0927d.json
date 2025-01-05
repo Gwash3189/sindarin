@@ -1,0 +1,45 @@
+{
+  "scriptId": "340",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/src/environments/integer.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 866, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        { "startOffset": 122, "endOffset": 367, "count": 12 },
+        { "startOffset": 252, "endOffset": 263, "count": 0 },
+        { "startOffset": 323, "endOffset": 334, "count": 0 }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 400, "endOffset": 570, "count": 0 }],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "define",
+      "ranges": [{ "startOffset": 595, "endOffset": 864, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 665, "endOffset": 695, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 726, "endOffset": 758, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 789, "endOffset": 860, "count": 1 }],
+      "isBlockCoverage": true
+    }
+  ]
+}

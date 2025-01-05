@@ -1,13 +1,19 @@
 // repl.ts
-import { ParenSaurus } from "./mod.ts";
-import { LispError } from "./types.ts";
+import { environments } from "./evaluator.ts";
+import { Sindarin } from "./mod.ts";
+import { TokenValues } from "./types.ts";
+import { LispError, TokenType } from "./types.ts";
 
 export class REPL {
-  private interpreter: ParenSaurus;
-  private prompt = "parensaurus> ";
+  private interpreter: Sindarin;
+  private prompt = "sindarin> ";
+  private counter = {open: 0, close: 0}
+  private input = ""
+  DEFAULT_PROMPT = "sindarin> "
+  OPEN_PAREN_PROMPT = "sindarin>* "
 
   constructor() {
-    this.interpreter = new ParenSaurus();
+    this.interpreter = new Sindarin();
   }
 
   private async readLine(): Promise<string> {
@@ -36,6 +42,9 @@ export class REPL {
 
   private handleSpecialCommands(input: string): boolean {
     switch (input.toLowerCase()) {
+      case ":inspect-repl":
+        console.log(JSON.stringify(this, null, 2))
+        return false
       case ":quit":
       case ":q":
       case ":exit":
@@ -44,7 +53,7 @@ export class REPL {
 
       case ":help":
         console.log(`
-ParenSaurus REPL Commands:
+Sindarin REPL Commands:
   :help, :h            Show this help message
   :quit, :q, :exit     Exit the REPL
   :reset               Reset the environment
@@ -52,14 +61,18 @@ ParenSaurus REPL Commands:
         `);
         return false;
 
-      case ":reset":
-        this.interpreter = new ParenSaurus();
+      case ":reset": {
+        this.interpreter.resetEnv();
         console.log("Environment reset.");
         return false;
+      }
+
+      case ":reload":
+        console.log("Reloading...");
+        return Deno.exit(5);
 
       case ":env":
-        // TODO: Implement environment inspection
-        console.log(this.interpreter.env);
+        console.log(environments);
         return false;
 
       default:
@@ -69,13 +82,15 @@ ParenSaurus REPL Commands:
 
   public async start(): Promise<void> {
     console.log(`
-ParenSaurus Lisp v0.1.0
+Sindarin Lisp v0.1.0
 Type :help for commands, :quit to exit
     `);
 
     while (true) {
       try {
-        const input = await this.readLine();
+        let input = await this.readLine();
+
+        if (this.counter.open > 0) input = " " + input
 
         if (input.length === 0) continue;
         if (input.startsWith(":")) {
@@ -83,8 +98,35 @@ Type :help for commands, :quit to exit
           continue;
         }
 
-        const result = this.interpreter.evaluate(input);
-        this.printResult(result.value);
+        this.counter = input.split('').reduce((acc, char) => {
+          if (char === TokenValues[TokenType.LEFT_PAREN]) {
+            acc.open = acc.open + 1
+          }
+
+          if (char === TokenValues[TokenType.RIGHT_PAREN]) {
+            acc.close = acc.close + 1
+          }
+
+          return acc
+        }, this.counter)
+
+        if (this.counter.open !== this.counter.close) {
+          if (!this.prompt.includes('*')) {
+            this.prompt = this.OPEN_PAREN_PROMPT
+          }
+          this.input = this.input + input
+          continue;
+        }
+
+        if (this.counter.open === this.counter.close) {
+          const result = this.interpreter.evaluate(this.input + input);
+          this.prompt = this.DEFAULT_PROMPT
+          this.printResult(result.value);
+          this.counter = {open: 0, close: 0}
+          this.input = ""
+        }
+
+
       } catch (error) {
         if (error instanceof LispError) {
           this.printError(error);

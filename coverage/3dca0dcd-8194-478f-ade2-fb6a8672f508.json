@@ -1,0 +1,36 @@
+{
+  "scriptId": "315",
+  "url": "file:///Users/adam/code/personal/deno/paren-saurus/test/environments/global_test.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 0, "endOffset": 669, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 222, "endOffset": 666, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 253, "endOffset": 289, "count": 2 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 326, "endOffset": 466, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 520, "endOffset": 662, "count": 1 }],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "",
+      "ranges": [{ "startOffset": 537, "endOffset": 598, "count": 1 }],
+      "isBlockCoverage": true
+    }
+  ]
+}
