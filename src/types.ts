@@ -14,9 +14,6 @@ enum TokenType {
   HASH_START = "HASH_START",
   HASH_END = "HASH_END",
   COMMENT = "COMMENT",
-  QUASIQUOTE = "QUASIQUOTE",
-  UNQUOTE = "UNQUOTE",
-  UNQUOTE_SPLICING = "UNQUOTE_SPLICING"
 }
 
 export const TokenValues = {
@@ -30,9 +27,6 @@ export const TokenValues = {
   [TokenType.NUMBER]: "",
   [TokenType.STRING]: '"',
   [TokenType.COMMENT]: ";",
-  [TokenType.QUASIQUOTE]: '`',
-  [TokenType.UNQUOTE]: ',',
-  [TokenType.UNQUOTE_SPLICING]: '@',
 } as const;
 
 // Token interface for lexer output
@@ -53,7 +47,6 @@ export type LispType =
   | "symbol"
   | "null"
   | "error"
-  | "macro"
   | "hash";
 
 export type LispValue =
@@ -114,11 +107,6 @@ const createList = (l: LispVal[]): LispVal => ({
   value: l,
 });
 
-const createMacro = (f: MacroFunction): LispVal => ({
-  type: "macro",
-  value: f,
-});
-
 const createFunction = (f: LispFunction): LispVal => ({
   type: "function",
   value: f,
@@ -177,11 +165,6 @@ const isFunction = (
 ): v is LispVal & { type: "function"; value: LispFunction } =>
   v.type === "function";
 
-const isMacro = (
-  v: LispVal,
-): v is LispVal & { type: "macro"; value: LispFunction } =>
-  v.type === "macro";
-
 const isKeyword = (
   v: LispVal,
 ): v is LispVal & { type: "keyword"; value: string } => v.type === "keyword";
@@ -236,13 +219,11 @@ export {
   createNumber,
   createString,
   createSymbol,
-  createMacro,
   EvalError,
   isBoolean,
   isError,
   isFalse,
   isFunction,
-  isMacro,
   isHash,
   isKeyword,
   isLispVal,

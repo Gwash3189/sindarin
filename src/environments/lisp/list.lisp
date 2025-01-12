@@ -2,10 +2,10 @@
   (defn count
     (list count)
     (if (Core/null? count)
-      (length list 0)
+      (List/count list 0)
       (if (Core/null? (List/head list))
         count
-        (List/length (List/tail list) (+ count 1))
+        (List/count (List/tail list) (+ count 1))
       )
     )
   )

@@ -116,39 +116,6 @@ Object.entries(coreListOps).forEach(([name, func]) => {
   globalEnv.set(name, func as LispFunc);
 });
 
-// Define core macros
-globalEnv.set("defmacro", {
-  isMacro: true,
-  call: (ast: LispList, env: Environment) => {
-    const [symbol, params, body] = ast;
-    if (!(symbol instanceof Symbol)) {
-      throw new Error("Macro name must be a symbol");
-    }
-    env.set(symbol.name, {
-      isMacro: true,
-      call: (args: LispList, callEnv: Environment) => {
-        const macroEnv = new Environment(env);
-        const restParam = (params as Symbol[]).find((param) =>
-          param.name.startsWith("...")
-        );
-        if (restParam) {
-          const restIndex = (params as Symbol[]).indexOf(restParam);
-          (params as Symbol[]).slice(0, restIndex).forEach((param, index) => {
-            macroEnv.set(param.name, args[index]);
-          });
-          macroEnv.set(restParam.name.slice(3), args.slice(restIndex));
-        } else {
-          (params as Symbol[]).forEach((param, index) => {
-            macroEnv.set(param.name, args[index]);
-          });
-        }
-        return evaluate(body, macroEnv);
-      },
-    } as LispMacro);
-    return name;
-  },
-} as LispMacro);
-
 // Helper function to define functions in our Lisp-like language
 globalEnv.set(
   "define",

@@ -135,11 +135,12 @@ const exit = createFunction((message: LispVal): LispVal => {
 });
 
 const inspect = createFunction((arg: LispVal): LispVal => {
+  console.log(arg);
   return arg;
 });
 
 const print = createFunction((arg: LispVal): LispVal => {
-  console.log(arg);
+  console.log(arg.value);
   return arg;
 });
 

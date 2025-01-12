@@ -12,7 +12,6 @@ import {
   isHash,
   isKeyword,
   isList,
-  isMacro,
   isNull,
   isNumber,
   isString,
@@ -29,7 +28,6 @@ import * as String from "./environments/string.ts";
 import * as File from "./environments/file.ts";
 import * as Integer from "./environments/integer.ts";
 import * as Global from "./environments/global.ts";
-import { createMacro } from "./types.ts";
 
 // Environment class
 export class Environment {
@@ -49,7 +47,6 @@ export class Environment {
 
   get<T = LispVal>(name: string): T {
     let current: Environment | null = this;
-
     while (current !== null) {
       const value = current.vars.get(name);
       if (value !== undefined) {
@@ -213,25 +210,6 @@ export class Evaluator {
             return this.evaluateOr(rest, env);
           case "require":
             return this.evaluateRequire(rest, env);
-          case "defmacro":
-            return this.evaluateDefMacro(rest, env)
-        }
-
-        try {
-          const resolved = env.get(first.value as string);
-          console.log(resolved)
-          if (isMacro(resolved)) {
-            console.log('is macro')
-            // Macros receive unevaluated arguments
-            const expanded = (resolved.value as MacroFunction)(rest, env);
-            console.log('expanded', expanded)
-            // The expansion is then evaluated
-            return this.evaluate(expanded, env);
-          }
-        } catch (e) {
-          console.error(e)
-          console.log('error!')
-          // If symbol isn't found, continue to function application
         }
       }
 
@@ -270,50 +248,6 @@ export class Evaluator {
       return nsEnv.get(func);
     }
     return env.get(symbolStr);
-  }
-
-  private evaluateDefMacro(args: LispVal[], env: Environment): LispVal {
-    if (args.length < 3) {
-      throw new EvalError("defmacro requires at least three arguments: name, parameter list, and body");
-    }
-
-    const [name, params, ...body] = args;
-
-    if (!isSymbol(name)) {
-      throw new EvalError("Macro name must be a symbol");
-    }
-
-    if (!isList(params)) {
-      throw new EvalError("Macro parameters must be a list");
-    }
-
-    // Create the macro function
-    const macro = createMacro((macroArgs: LispVal[], macroEnv: Environment): LispVal => {
-      // Create new environment for macro execution
-      const localEnv = new Environment(macroEnv);
-
-      // Bind parameters to arguments
-      const parameters = (params.value as LispVal[]).map(p => {
-        if (!isSymbol(p)) {
-          throw new EvalError("Macro parameters must be symbols");
-        }
-        return p.value as string;
-      });
-
-      for (let i = 0; i < parameters.length; i++) {
-        localEnv.set(parameters[i], macroArgs[i] || createNull());
-      }
-
-      // Execute body expressions
-      let result = createNull();
-      for (const expr of body) {
-        result = this.evaluate(expr, localEnv);
-      }
-      return result;
-    });
-
-    // Store macro in environment
-    return env.set(name.value as string, macro);
   }
 
   private evaluateRequire(args: LispVal[], env: Environment): LispVal {
