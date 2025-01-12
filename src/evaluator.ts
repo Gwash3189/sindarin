@@ -190,8 +190,6 @@ export class Evaluator {
       // Handle special forms
       if (isSymbol(first)) {
         switch (first.value) {
-          case "quote":
-            return this.evaluateQuote(rest);
           case "if":
             return this.evaluateIf(rest, env);
           case "ns":
@@ -353,56 +351,6 @@ ${err.message}`);
       throw new EvalError("Quote requires exactly one argument");
     }
     return args[0];
-  }
-
-  private evaluateQuasiQuote(args: LispVal[], env: Environment): LispVal {
-    if (args.length !== 1) {
-      throw new EvalError("Quasiquote requires exactly one argument");
-    }
-
-    return this.quasiquote(args[0], env, 0);
-  }
-
-  private quasiquote(exp: LispVal, env: Environment, depth: number): LispVal {
-    if (!isList(exp)) {
-      return exp;
-    }
-
-    const elements = exp.value as LispVal[];
-    if (elements.length === 0) {
-      return exp;
-    }
-
-    const first = elements[0];
-    if (isSymbol(first)) {
-      switch (first.value) {
-        case "unquote":
-          if (depth === 0) {
-            if (elements.length !== 2) {
-              throw new EvalError("Unquote requires exactly one argument");
-            }
-            return this.evaluate(elements[1], env);
-          }
-          break;
-        case "quasiquote":
-          return this.quasiquote(elements[1], env, depth + 1);
-      }
-    }
-
-    // Handle unquote-splicing
-    if (elements.length >= 2 && isSymbol(first) && first.value === "unquote-splicing") {
-      if (depth === 0) {
-        const spliced = this.evaluate(elements[1], env);
-        if (!isList(spliced)) {
-          throw new EvalError("Unquote-splicing requires a list");
-        }
-        return createList([...spliced.value as LispVal[]]);
-      }
-    }
-
-    // Recursively process each element
-    const processed = elements.map(el => this.quasiquote(el, env, depth));
-    return createList(processed);
   }
 
   private evaluateIf(args: LispVal[], env: Environment): LispVal {

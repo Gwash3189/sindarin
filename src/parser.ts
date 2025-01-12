@@ -53,51 +53,6 @@ export class Parser {
     }
   }
 
-  private parseQuasiquote(): LispVal {
-    // Consume the quasiquote token
-    this.consume();
-
-    if (!this.peek()) {
-      throw new ParseError("Unexpected end of input after quasiquote");
-    }
-
-    const quoted = this.parseExpression();
-    return createList([
-      createSymbol("quasiquote"),
-      quoted,
-    ]);
-  }
-
-  private parseUnquote(): LispVal {
-    // Consume the unquote token
-    this.consume();
-
-    if (!this.peek()) {
-      throw new ParseError("Unexpected end of input after unquote");
-    }
-
-    const unquoted = this.parseExpression();
-    return createList([
-      createSymbol("unquote"),
-      unquoted,
-    ]);
-  }
-
-  private parseUnquoteSplicing(): LispVal {
-    // Consume the unquote-splicing token
-    this.consume();
-
-    if (!this.peek()) {
-      throw new ParseError("Unexpected end of input after unquote-splicing");
-    }
-
-    const spliced = this.parseExpression();
-    return createList([
-      createSymbol("unquote-splicing"),
-      spliced,
-    ]);
-  }
-
   private parseList(): LispVal {
     // Consume the opening parenthesis
     this.consume();
@@ -151,21 +106,6 @@ export class Parser {
     ]);
   }
 
-  private parseQuoted(): LispVal {
-    // Consume the quote
-    this.consume();
-
-    if (!this.peek()) {
-      throw new ParseError("Unexpected end of input after quote");
-    }
-
-    const quoted = this.parseExpression();
-    return createList([
-      createSymbol("quote"),
-      quoted,
-    ]);
-  }
-
   private parseExpression(): LispVal {
     const token = this.peek();
 
@@ -177,9 +117,6 @@ export class Parser {
       case TokenType.LEFT_PAREN:
         return this.parseList();
 
-      case TokenType.QUOTE:
-        return this.parseQuoted();
-
       case TokenType.RIGHT_PAREN:
         throw new ParseError("Unexpected closing parenthesis");
 
@@ -189,15 +126,7 @@ export class Parser {
       case TokenType.HASH_END:
         throw new ParseError("Unexpected }");
 
-      case TokenType.QUASIQUOTE:
-        return this.parseQuasiquote();
-      case TokenType.UNQUOTE:
-        return this.parseUnquote();
-      case TokenType.UNQUOTE_SPLICING:
-        return this.parseUnquoteSplicing();
-
-
-      default:
+        default:
         return this.parseAtom(this.consume());
     }
   }
