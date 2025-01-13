@@ -140,7 +140,7 @@ const inspect = createFunction((arg: LispVal): LispVal => {
 });
 
 const print = createFunction((arg: LispVal): LispVal => {
-  console.log(arg.value);
+  console.log(arg);
   return arg;
 });
 
@@ -157,6 +157,7 @@ const not = createFunction((arg: LispVal): LispVal => {
 });
 
 const tru = createBoolean(true);
+
 const fls = createBoolean(false);
 
 const jsEval = createFunction((arg: LispVal): LispVal => {

@@ -32,19 +32,35 @@
   (defn every?
     (list pred)
     (begin
-      (def count (List/count list))
-      (if (= count 0)
-      false
-      (begin
-        (def result (= (pred (List/head list)) true))
-        (if (= count 1)
-          result
-          (if (= result true)
-            (every? (List/tail list) pred)
-            (return false)
+      (if (= (List/count list) 0)
+        false
+        (List/reduce
+          list
+          (fn (acc current)
+            (and
+              true
+              (pred acc)
+            )
           )
         )
       )
-    ))
+    )
+  )
+  (defn some?
+    (list pred)
+    (begin
+      (if (= (List/count list) 0)
+        false
+        (Boolean/cast
+          (List/reduce
+            list
+            (fn (acc current)
+              (or acc (pred current))
+            )
+            (List/head list)
+          )
+        )
+      )
+    )
   )
 )

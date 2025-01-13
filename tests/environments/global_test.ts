@@ -11,7 +11,7 @@ describe("require", () => {
   });
 
   it("loads and evaluate a file", () => {
-    lisp.evaluate('(require "./test/fixtures/test.lisp")');
+    lisp.evaluate('(require "./tests/fixtures/test.lisp")');
     expect(lisp.evaluate(`(inspect test)`)).toEqual(createNumber(42));
   });
 

@@ -1,7 +1,6 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { Sindarin } from "../../src/mod.ts";
 import { expect } from "@std/expect/expect";
-import { createBoolean } from "../../src/types.ts";
 
 describe("List", () => {
   let lisp: Sindarin;
@@ -57,11 +56,49 @@ describe("List", () => {
     });
   });
 
+  describe("some?", () => {
+    describe("when one member of the list passes the predicate", () => {
+      it("returns true", () => {
+        expect(lisp.evaluate(`
+          (List/some? (List/create 2 3 5) Integer/even?)
+        `)).toEqual(lisp.evaluate("true"));
+      });
+    });
+  });
+
   describe("sort", () => {
     describe("when given an sortable list", () => {
       it("sorts it according to deno Array.sort", () => {
         expect(lisp.evaluate(`(List/sort (List/create 4 3 5 3 9 3))`))
           .toEqual(lisp.evaluate(`(List/create 3 3 3 4 5 9)`));
+      });
+    });
+  });
+
+  describe("reduce", () => {
+    describe("when a list and a function that sums the list", () => {
+      it("returns the sum", () => {
+        expect(lisp.evaluate(`
+            (List/reduce
+              (List/create 1 2)
+              (fn (x y) (+ x y))
+              0
+            )
+        `))
+          .toEqual(lisp.evaluate(`3`));
+      });
+    });
+  });
+
+  describe("sum", () => {
+    describe("when given a list of numbers", () => {
+      it("returns the sum", () => {
+        expect(lisp.evaluate(`
+            (List/sum
+              (List/create 1 2)
+            )
+        `))
+          .toEqual(lisp.evaluate(`3`));
       });
     });
   });

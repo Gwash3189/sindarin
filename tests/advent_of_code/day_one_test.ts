@@ -20,7 +20,7 @@ describe("Advent Of Code", () => {
           (def contents
             (String/split
               (String/trim
-                (File/read-text-file "test/advent_of_code/text.txt")
+                (File/read-text-file "tests/advent_of_code/text.txt")
               ) "\n"
             )
           )
@@ -64,7 +64,7 @@ describe("Advent Of Code", () => {
                 )
               )
             )
-            (List/reduce distances 0 (fn (acc current) (+ acc current)))
+            (List/reduce distances (fn (acc current) (+ acc current)) 0)
           )
         )`,
       )).toEqual(createNumber(11));

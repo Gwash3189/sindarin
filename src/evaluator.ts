@@ -17,8 +17,8 @@ import {
   isString,
   isSymbol,
   LispFunction,
-  MacroFunction,
   LispVal,
+  MacroFunction,
 } from "./types.ts";
 
 import * as Core from "./environments/core.ts";
@@ -27,6 +27,7 @@ import * as List from "./environments/list.ts";
 import * as String from "./environments/string.ts";
 import * as File from "./environments/file.ts";
 import * as Integer from "./environments/integer.ts";
+import * as Boolean from "./environments/boolean.ts";
 import * as Global from "./environments/global.ts";
 
 // Environment class
@@ -216,7 +217,12 @@ export class Evaluator {
       // Function application
       const proc = this.evaluate(first, env);
       if (!isFunction(proc)) {
-        throw new EvalError(`${JSON.stringify(first.value)} is not a function`);
+        throw new EvalError(`
+          ${JSON.stringify(first.value)} is not a function.
+          item: ${JSON.stringify(proc)}
+          code: ${JSON.stringify(exp)}
+          env: ${JSON.stringify(env)}
+        `);
       }
 
       const evaluatedArguments = [];
@@ -510,6 +516,7 @@ function setupNamespaces() {
   String.define(environments);
   File.define(environments);
   Integer.define(environments);
+  Boolean.define(environments);
 }
 
 // Convenience function for evaluation

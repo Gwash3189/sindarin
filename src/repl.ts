@@ -7,10 +7,10 @@ import { LispError, TokenType } from "./types.ts";
 export class REPL {
   private interpreter: Sindarin;
   private prompt = "sindarin> ";
-  private counter = {open: 0, close: 0}
-  private input = ""
-  DEFAULT_PROMPT = "sindarin> "
-  OPEN_PAREN_PROMPT = "sindarin>* "
+  private counter = { open: 0, close: 0 };
+  private input = "";
+  DEFAULT_PROMPT = "sindarin> ";
+  OPEN_PAREN_PROMPT = "sindarin>* ";
 
   constructor() {
     this.interpreter = new Sindarin();
@@ -43,8 +43,8 @@ export class REPL {
   private handleSpecialCommands(input: string): boolean {
     switch (input.toLowerCase()) {
       case ":inspect-repl":
-        console.log(JSON.stringify(this, null, 2))
-        return false
+        console.log(JSON.stringify(this, null, 2));
+        return false;
       case ":quit":
       case ":q":
       case ":exit":
@@ -90,7 +90,7 @@ Type :help for commands, :quit to exit
       try {
         let input = await this.readLine();
 
-        if (this.counter.open > 0) input = " " + input
+        if (this.counter.open > 0) input = " " + input;
 
         if (input.length === 0) continue;
         if (input.startsWith(":")) {
@@ -98,35 +98,33 @@ Type :help for commands, :quit to exit
           continue;
         }
 
-        this.counter = input.split('').reduce((acc, char) => {
+        this.counter = input.split("").reduce((acc, char) => {
           if (char === TokenValues[TokenType.LEFT_PAREN]) {
-            acc.open = acc.open + 1
+            acc.open = acc.open + 1;
           }
 
           if (char === TokenValues[TokenType.RIGHT_PAREN]) {
-            acc.close = acc.close + 1
+            acc.close = acc.close + 1;
           }
 
-          return acc
-        }, this.counter)
+          return acc;
+        }, this.counter);
 
         if (this.counter.open !== this.counter.close) {
-          if (!this.prompt.includes('*')) {
-            this.prompt = this.OPEN_PAREN_PROMPT
+          if (!this.prompt.includes("*")) {
+            this.prompt = this.OPEN_PAREN_PROMPT;
           }
-          this.input = this.input + input
+          this.input = this.input + input;
           continue;
         }
 
         if (this.counter.open === this.counter.close) {
           const result = this.interpreter.evaluate(this.input + input);
-          this.prompt = this.DEFAULT_PROMPT
+          this.prompt = this.DEFAULT_PROMPT;
           this.printResult(result.value);
-          this.counter = {open: 0, close: 0}
-          this.input = ""
+          this.counter = { open: 0, close: 0 };
+          this.input = "";
         }
-
-
       } catch (error) {
         if (error instanceof LispError) {
           this.printError(error);

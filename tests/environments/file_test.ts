@@ -13,7 +13,7 @@ describe("File", () => {
 
     it("reads the file at the provided path", () => {
       lisp.evaluate(
-        `(define contents (File/read-text-file "./test/fixtures/test.lisp"))`,
+        `(define contents (File/read-text-file "./tests/fixtures/test.lisp"))`,
       );
 
       expect(lisp.evaluate("(inspect contents)")).toEqual(

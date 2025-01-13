@@ -151,16 +151,6 @@ const push = createFunction((list: LispVal, value: LispVal): LispVal => {
   return createList(lst);
 });
 
-const reduce = createFunction(
-  (list: LispVal, startValue: LispVal, func: LispVal) => {
-    const lst = list.value as Array<LispVal>;
-    const f = func.value as (acc: unknown, current: unknown) => unknown;
-
-    const result = lst.reduce(f, startValue) as LispVal;
-    return result;
-  },
-);
-
 export const define = (manager: EnvironmentManager) => {
   manager.create("List");
   manager.extend("List", (env) => env.set("create", create));
@@ -173,7 +163,6 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("List", (env) => env.set("map", map));
   manager.extend("List", (env) => env.set("sort", sort));
   manager.extend("List", (env) => env.set("push", push));
-  manager.extend("List", (env) => env.set("reduce", reduce));
   manager.extend(
     "List",
     (env) => env.evaluate(`(require "./src/environments/lisp/list.lisp")`),

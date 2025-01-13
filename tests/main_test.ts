@@ -14,7 +14,6 @@ import { createBoolean } from "../src/types.ts";
 // integration.test.ts
 
 describe("Sindarin Integration Tests", () => {
-
   describe("Comments", () => {
     let lisp: Sindarin;
 
@@ -45,7 +44,7 @@ describe("Sindarin Integration Tests", () => {
     it("should evaluate complex JS code", () => {
       expect(
         lisp.evaluate(
-          "(js-eval \"Deno.readTextFileSync('test/fixtures/test.lisp')\")",
+          "(js-eval \"Deno.readTextFileSync('tests/fixtures/test.lisp')\")",
         ),
       ).toEqual(createString("(define test 42)\n"));
     });

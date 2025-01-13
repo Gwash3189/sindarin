@@ -126,7 +126,7 @@ export class Parser {
       case TokenType.HASH_END:
         throw new ParseError("Unexpected }");
 
-        default:
+      default:
         return this.parseAtom(this.consume());
     }
   }
