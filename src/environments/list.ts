@@ -57,7 +57,7 @@ const element = createFunction((list: LispVal, index: LispVal): LispVal => {
   const i = index.value as number;
 
   if (i < 0 || i >= elements.length) {
-    throw new EvalError("index out of range");
+    return createNull();
   }
 
   return elements[i];

@@ -1,14 +1,14 @@
 (ns List
   (defn count
-    (list count)
-    (if (Core/null? count)
-      (List/count list 0)
-      (if (Core/null? (List/head list))
-        count
-        (List/count (List/tail list) (+ count 1))
+    (list)
+    (begin
+      (if (= (List/at list 0) null)
+        0
+        (+ 1 (count (List/tail list)))
       )
     )
   )
+
   (defn reduce
     (list func acc)
     (begin

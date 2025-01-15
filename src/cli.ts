@@ -5,7 +5,7 @@ function printHelp() {
   console.log(`
     Usage: sindarin [OPTIONS...]
 
-    --file, -f    Path to the file to be evaluated
+    --file, -f    Path to the file to be evaluated. When not provided, it will look for a file named main.sdr in the current directory.
     --help, -h    Show this help message
   `
   )
@@ -32,8 +32,29 @@ function main(): void {
     fileToParse = args.file
   }
 
-  const fullPath = Deno.realPathSync(fileToParse)
-  const contents = Deno.readTextFileSync(fullPath)
+  let fullPath: string
+  let contents: string
+
+  try {
+    fullPath = Deno.realPathSync(fileToParse)
+    contents = Deno.readTextFileSync(fullPath)
+  } catch (_) {
+    console.log(``)
+    if (args.file) {
+      console.log(`%cError:`, "color: red")
+      console.log(`Could not read file ${fileToParse}`)
+    } else {
+      console.log(`%cError:`, "color: red")
+      console.log(`Could not read file ${fileToParse}.`)
+      console.log(``)
+      console.log(`Help Text:
+Because you didn't provide a file to be evaluated
+we looked for a file named main.sdr in the current directory, but couldn't find it.
+      `)
+    }
+
+    Deno.exit(1)
+  }
 
   try {
     const result = new Sindarin().evaluate(contents)

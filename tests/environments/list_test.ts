@@ -66,6 +66,15 @@ describe("List", () => {
     });
   });
 
+  describe("count", () => {
+    describe("when given a list", () => {
+      it("returns the number of elements in that list", () => {
+        expect(lisp.evaluate(`(List/count (List/create 4 2))`))
+          .toEqual(lisp.evaluate(`2`));
+      });
+    });
+  });
+
   describe("sort", () => {
     describe("when given an sortable list", () => {
       it("sorts it according to deno Array.sort", () => {
