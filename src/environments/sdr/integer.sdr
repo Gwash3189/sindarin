@@ -1,3 +1,12 @@
 (ns Integer
   (defn even? (x) (= (% x 2) 0))
+  (defn odd? (x) (not (even? x)))
+  (defn positive? (x) (> x 0))
+  (defn negative? (x) (< x 0))
+  (defn zero? (x) (= x 0))
+  (defn abs (x) (if (negative? x) (- x) x))
+  (defn max (x y) (if (> x y) x y))
+  (defn min (x y) (if (< x y) x y))
+  (defn increment (x) (+ x 1))
+  (defn decrement (x) (- x 1))
 )

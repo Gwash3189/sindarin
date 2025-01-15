@@ -1,4 +1,24 @@
 (ns List
+  (defn first
+    (list)
+    (List/at list 0)
+  )
+  (defn second
+    (list)
+    (List/at list 1)
+  )
+  (defn third
+    (list)
+    (List/at list 2)
+  )
+  (defn fourth
+    (list)
+    (List/at list 3)
+  )
+  (defn last
+    (list)
+    (List/at list (- (List/count list) 1))
+  )
   (defn count
     (list)
     (begin
@@ -8,11 +28,23 @@
       )
     )
   )
-
+  (defn empty?
+    (list)
+    (= (List/count list) 0)
+  )
+  (defn at
+    (list idx)
+    (begin
+      (if (= idx 0)
+        (List/head list)
+        (List/at (List/tail list) (- idx 1))
+      )
+    )
+  )
   (defn reduce
     (list func acc)
     (begin
-      (if (= (List/count list) 0)
+      (if (List/empty? list)
         acc
         (reduce
           (List/tail list)
@@ -25,6 +57,16 @@
       )
     )
   )
+  (defn push
+    (list item)
+    (if (or (Core/null? list) (Core/null? item))
+      null
+      (List/concat
+        (List/create item)
+        list
+      )
+    )
+  )
   (defn sum
     (list)
     (reduce list (fn (x y) (+ x y)) 0)
@@ -32,7 +74,7 @@
   (defn every?
     (list pred)
     (begin
-      (if (= (List/count list) 0)
+      (if (List/empty? list)
         false
         (List/reduce
           list
@@ -49,7 +91,7 @@
   (defn some?
     (list pred)
     (begin
-      (if (= (List/count list) 0)
+      (if (List/empty? list)
         false
         (Boolean/cast
           (List/reduce
@@ -61,6 +103,48 @@
           )
         )
       )
+    )
+  )
+  (defn map
+    (list func)
+    (begin
+      (defn -map
+        (lst f idx)
+        (if (List/empty? lst)
+          lst
+          (List/concat
+            (List/create
+              (f (List/head lst) idx)
+            )
+            (-map
+              (List/tail lst)
+              f
+              (+ idx 1)
+            )
+          )
+        )
+      )
+      (-map list func 0)
+    )
+  )
+  (defn each
+    (list func)
+    (begin
+      (defn -each
+        (lst f idx)
+        (if (List/empty? lst)
+          null
+          (begin
+            (f (List/head lst) idx)
+            (-each
+              (List/tail lst)
+              f
+              (+ idx 1)
+            )
+          )
+        )
+      )
+      (-each list func 0)
     )
   )
 )

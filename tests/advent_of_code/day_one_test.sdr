@@ -1,6 +1,5 @@
 (begin
-  (def left-list (List/create))
-  (def right-list (List/create))
+  (def lists #{ :left-list (List/create) :right-list (List/create) })
   (def contents
     (String/split
       (String/trim
@@ -26,21 +25,37 @@
       )
     )
   )
-  (begin
-    (List/each number-tuples
-      (fn (number-tuple index)
-        (begin
-          (List/push left-list (List/at number-tuple 0))
-          (List/push right-list (List/at number-tuple 1))
+  (List/each
+    number-tuples
+    (fn (number-tuple index)
+      (begin
+        (Hash/set
+          lists
+          :left-list
+          (List/push
+            (Hash/get lists :left-list)
+            (List/at number-tuple 0)
+          )
+        )
+        (Hash/set
+          lists
+          :right-list
+          (List/push
+            (Hash/get lists :right-list)
+            (List/at
+              number-tuple
+              1
+            )
+          )
         )
       )
     )
   )
   (begin
-    (define sum 0)
-    (define right-list (List/sort right-list))
-    (define left-list (List/sort left-list))
-    (define distances
+    (def sum 0)
+    (def right-list (List/sort (Hash/get lists :right-list)))
+    (def left-list (List/sort (Hash/get lists :left-list)))
+    (def distances
       (List/map left-list
         (fn
           (numb index)

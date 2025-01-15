@@ -1,3 +1,13 @@
 (defn return (x) x)
 (defn >= (n x) (or (> n x) (= n x)))
 (defn <= (n x) (or (< n x) (= n x)))
+(defn assert
+  (x msg)
+  (if (not x)
+    (if (Core/null? msg)
+      (pp "Assertion failed")
+      (pp msg)
+    )
+    true
+  )
+)

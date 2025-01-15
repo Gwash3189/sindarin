@@ -45,72 +45,15 @@ const concat = createFunction((head: LispVal, tail: LispVal): LispVal => {
   ]);
 });
 
-const element = createFunction((list: LispVal, index: LispVal): LispVal => {
-  if (!isList(list)) {
-    throw new EvalError("element requires a list as its first argument");
-  }
-  if (!isNumber(index)) {
-    throw new EvalError("element requires a number as its second argument");
-  }
-
-  const elements = list.value as LispVal[];
-  const i = index.value as number;
-
-  if (i < 0 || i >= elements.length) {
-    return createNull();
-  }
-
-  return elements[i];
-});
-
-const iterate = createFunction((list: LispVal, callback: LispVal): LispVal => {
-  if (list === undefined || isNull(list)) {
-    throw new EvalError("List/iterate first argument must not be null");
-  }
-
-  if (callback === undefined || isNull(callback)) {
-    throw new EvalError(
-      "List/iterate second argument must be callback function",
-    );
-  }
-
-  const arr = list.value as Array<LispVal>;
-  const callbk = callback.value as (...args: LispVal[]) => void;
-
-  if (arr.length === 0) {
-    return createNull();
-  }
-
-  for (let i = 0; i < arr.length; i++) {
-    const element = arr[i];
-    callbk(element, createNumber(i));
-  }
-
-  return createNull();
-});
-
-const map = createFunction((list: LispVal, callback: LispVal): LispVal => {
-  if (list === undefined || isNull(list)) {
-    return createError("List/map first argument must not be null");
-  }
-
-  if (callback === undefined || isNull(callback)) {
-    return createError(
-      "List/map second argument must be callback function",
-    );
-  }
-
-  const lst = list.value as LispVal[];
-  const callbk = callback.value as (...args: LispVal[]) => LispVal;
-  return createList(lst.map((value, index) => {
-    return callbk(value, createNumber(index));
-  }));
-});
-
 const sort = createFunction((list: LispVal, sorter: LispVal): LispVal => {
   if (isNull(list) || !isList(list)) {
     return createError("List/sort requires a list");
   }
+
+  if (list.value.length === 0) {
+    return list;
+  }
+
   if (sorter !== undefined && (isNull(sorter) || !isFunction(sorter))) {
     return createError(
       "List/sort second parameter must be a function if it's provided",
@@ -160,12 +103,7 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("List", (env) => env.set("head", head));
   manager.extend("List", (env) => env.set("tail", tail));
   manager.extend("List", (env) => env.set("concat", concat));
-  manager.extend("List", (env) => env.set("at", element));
-  manager.extend("List", (env) => env.set("iterate", iterate));
-  manager.extend("List", (env) => env.set("each", iterate));
-  manager.extend("List", (env) => env.set("map", map));
   manager.extend("List", (env) => env.set("sort", sort));
-  manager.extend("List", (env) => env.set("push", push));
   manager.extend(
     "List",
     (env) => env.evaluate(`(require "./src/environments/sdr/list.sdr")`),

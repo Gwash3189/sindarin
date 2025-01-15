@@ -2,7 +2,10 @@
   "tasks": {
     "dev": "deno run --watch main.ts",
     "repl": "deno run -A src/repl.ts",
-    "test": "deno test -A"
+    "isdr": "./script/repl.sh",
+    "cli": "deno run -A src/cli.ts",
+    "test": "deno test -A",
+    "compile": "deno compile --allow-read --output 'sdr' src/cli.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1",

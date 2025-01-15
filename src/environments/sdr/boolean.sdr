@@ -1,7 +1,7 @@
 (ns Boolean
   (defn cast
     (item)
-    (if (or (= item null) (= item false))
+    (if (or (Core/null? item) (= item false))
       false
       true
     )

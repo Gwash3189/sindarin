@@ -14,16 +14,6 @@ export class Sindarin {
     return evaluate(parse(tokenize(program)), this.env());
   }
 
-  // Evaluates multiple expressions
-  evaluateMultiple(programs: string[]): LispVal[] {
-    return programs.map((program) => this.evaluate(program));
-  }
-
-  // Gets a value from the environment
-  getEnvValue(name: string): LispVal {
-    return this.env().get(name);
-  }
-
   // Reset the environment
   resetEnv(): void {
     environments.reset("global");

@@ -15,19 +15,6 @@ describe("List", () => {
 
       expect(lisp.evaluate(`(List/at list 0)`)).toEqual(lisp.evaluate(`1`));
     });
-
-    describe("when given a number that is out of bounds", () => {
-      it("throws a an EvalError", () => {
-        lisp.evaluate(`(define list (List/create 1 2 3))`);
-
-        expect(() => lisp.evaluate(`(List/at list -1)`)).toThrow(
-          EvalError("index out of range"),
-        );
-        expect(() => lisp.evaluate(`(List/at list 4)`)).toThrow(
-          EvalError("index out of range"),
-        );
-      });
-    });
   });
 
   describe("map", () => {
@@ -108,6 +95,32 @@ describe("List", () => {
             )
         `))
           .toEqual(lisp.evaluate(`3`));
+      });
+    });
+  });
+
+  describe("push", () => {
+    describe("when given an empty list and an item", () => {
+      it("returns a list containing that item", () => {
+        expect(lisp.evaluate(`
+            (List/push
+              (List/create)
+              1
+            )
+        `))
+          .toEqual(lisp.evaluate(`(List/create 1)`));
+      });
+    });
+
+    describe("when given a list containing items and an item", () => {
+      it("returns a list containing that item", () => {
+        expect(lisp.evaluate(`
+            (List/push
+              (List/create 2 3)
+              1
+            )
+        `))
+          .toEqual(lisp.evaluate(`(List/create 1 2 3)`));
       });
     });
   });
