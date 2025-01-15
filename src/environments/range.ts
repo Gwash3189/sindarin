@@ -6,6 +6,6 @@ export const define = (manager: EnvironmentManager) => {
 
   manager.extend(
     "Range",
-    (env) => env.evaluate(`(require "./src/environments/lisp/range.lisp")`),
+    (env) => env.evaluate(`(require "./src/environments/sdr/range.sdr")`),
   );
 };

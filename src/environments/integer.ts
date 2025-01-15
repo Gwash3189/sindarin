@@ -37,6 +37,6 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("Integer", (env) => env.set("create", create));
   manager.extend(
     "Integer",
-    (env) => env.evaluate(`(require "./src/environments/lisp/integer.lisp")`),
+    (env) => env.evaluate(`(require "./src/environments/sdr/integer.sdr")`),
   );
 };

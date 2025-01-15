@@ -2,25 +2,37 @@ import { Sindarin } from './mod.ts'
 import { parseArgs} from "@std/cli";
 
 function printHelp() {
-  console.log(`Usage: sindarin [OPTIONS...]`)
-  console.log(`\nRequired Flags:`)
-  console.log(` --file      the file to evaluate`)
+  console.log(`
+    Usage: sindarin [OPTIONS...]
+
+    --file, -f    Path to the file to be evaluated
+    --help, -h    Show this help message
+  `
+  )
 }
 
 function main(): void {
-  const args = parseArgs(Deno.args)
-  if(args.help || args.h) {
+  let fileToParse: string
+
+  const args = parseArgs(Deno.args, {
+    alias: {
+      help: 'h',
+      file: 'f'
+    }
+  })
+
+  if(args.help) {
     printHelp()
     return Deno.exit(0)
   }
 
   if (!args.file) {
-    console.error('Provide a --file argument in order for the CLI to work')
-    console.error('Example: sindarin --file=src/main.lisp')
-    return Deno.exit(1)
+    fileToParse = Deno.cwd() + '/main.sdr'
+  } else {
+    fileToParse = args.file
   }
 
-  const fullPath = Deno.realPathSync(args.file)
+  const fullPath = Deno.realPathSync(fileToParse)
   const contents = Deno.readTextFileSync(fullPath)
 
   try {

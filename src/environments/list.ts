@@ -168,6 +168,6 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("List", (env) => env.set("push", push));
   manager.extend(
     "List",
-    (env) => env.evaluate(`(require "./src/environments/lisp/list.lisp")`),
+    (env) => env.evaluate(`(require "./src/environments/sdr/list.sdr")`),
   );
 };

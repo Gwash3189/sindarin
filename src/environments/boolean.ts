@@ -6,6 +6,6 @@ export const define = (manager: EnvironmentManager) => {
 
   manager.extend(
     "Boolean",
-    (env) => env.evaluate(`(require "./src/environments/lisp/boolean.lisp")`),
+    (env) => env.evaluate(`(require "./src/environments/sdr/boolean.sdr")`),
   );
 };

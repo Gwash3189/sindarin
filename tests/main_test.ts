@@ -44,7 +44,7 @@ describe("Sindarin Integration Tests", () => {
     it("should evaluate complex JS code", () => {
       expect(
         lisp.evaluate(
-          "(js-eval \"Deno.readTextFileSync('tests/fixtures/test.lisp')\")",
+          "(js-eval \"Deno.readTextFileSync('tests/fixtures/test.sdr')\")",
         ),
       ).toEqual(createString("(define test 42)\n"));
     });

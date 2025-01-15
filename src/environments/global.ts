@@ -228,6 +228,6 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("global", (env) => env.set("exit", exit));
   manager.extend(
     "global",
-    (env) => env.evaluate(`(require "./src/environments/lisp/global.lisp")`),
+    (env) => env.evaluate(`(require "./src/environments/sdr/global.sdr")`),
   );
 };

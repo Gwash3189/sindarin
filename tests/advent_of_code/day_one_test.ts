@@ -13,7 +13,7 @@ describe("Advent Of Code", () => {
   describe("when it is day one", () => {
     it("can complete the challenge", () => {
       expect(lisp.evaluate(
-        `(require "./tests/advent_of_code/day_one_test.lisp")`,
+        `(require "./tests/advent_of_code/day_one_test.sdr")`,
       )).toEqual(createNumber(11));
     });
   });
