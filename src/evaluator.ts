@@ -18,7 +18,6 @@ import {
   isSymbol,
   LispFunction,
   LispVal,
-  MacroFunction,
 } from "./types.ts";
 
 import * as Core from "./environments/core.ts";
@@ -28,6 +27,7 @@ import * as String from "./environments/string.ts";
 import * as File from "./environments/file.ts";
 import * as Integer from "./environments/integer.ts";
 import * as Boolean from "./environments/boolean.ts";
+import * as Range from "./environments/range.ts";
 import * as Global from "./environments/global.ts";
 
 // Environment class
@@ -517,6 +517,7 @@ function setupNamespaces() {
   File.define(environments);
   Integer.define(environments);
   Boolean.define(environments);
+  Range.define(environments);
 }
 
 // Convenience function for evaluation

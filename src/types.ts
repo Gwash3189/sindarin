@@ -57,15 +57,11 @@ export type LispValue =
   | LispVal[]
   | LispExport
   | LispHash
-  | MacroFunction
   | null;
 interface LispVal<T = LispType, V = LispValue> {
   type: T;
   value: V;
 }
-
-// Function type
-type MacroFunction = (args: LispVal[], env: Environment) => LispVal;
 
 // Function type
 type LispFunction = (...args: LispVal[]) => LispVal;
@@ -237,7 +233,6 @@ export {
   type LispExport,
   type LispFunction,
   type LispVal,
-  type MacroFunction,
   ParseError,
   type Token,
   TokenType,

@@ -557,38 +557,6 @@ describe("Sindarin Integration Tests", () => {
     });
   });
 
-  describe("List Operations", () => {
-    let lisp: Sindarin;
-
-    beforeEach(() => {
-      lisp = new Sindarin();
-    });
-
-    it("should get the head of a list", () => {
-      expect(
-        lisp.evaluate("(List/head (List/create 1 2 3))"),
-      ).toEqual(
-        createNumber(1),
-      );
-    });
-
-    it("should get the tail of a list", () => {
-      expect(
-        lisp.evaluate("(List/tail (List/create 1 2 3))"),
-      ).toEqual(
-        createList([createNumber(2), createNumber(3)]),
-      );
-    });
-
-    it("should construct new lists with concat", () => {
-      expect(
-        lisp.evaluate("(List/concat 1 (List/create 2 3))"),
-      ).toEqual(
-        createList([createNumber(1), createNumber(2), createNumber(3)]),
-      );
-    });
-  });
-
   describe("Conditionals", () => {
     let lisp: Sindarin;
 

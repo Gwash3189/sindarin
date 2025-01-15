@@ -36,10 +36,13 @@ const tail = createFunction((list: LispVal): LispVal => {
 });
 
 const concat = createFunction((head: LispVal, tail: LispVal): LispVal => {
-  if (!isList(tail)) {
-    throw new EvalError("concat requires a list as its second argument");
+  if (!isList(head) || !isList(tail)) {
+    throw new EvalError("concat requires a list for both arguments");
   }
-  return createList([head, ...(tail.value as LispVal[])]);
+  return createList([
+    ...(head.value as LispVal[]),
+    ...(tail.value as LispVal[]),
+  ]);
 });
 
 const element = createFunction((list: LispVal, index: LispVal): LispVal => {

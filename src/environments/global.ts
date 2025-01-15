@@ -193,10 +193,21 @@ const jsEval = createFunction((arg: LispVal): LispVal => {
   }
 });
 
+const explore = (manager: EnvironmentManager) =>
+  createFunction((name: LispVal) => {
+    const ns = manager.get(name.value as string);
+    if (ns === undefined) {
+      return createError(`No namespace by the name ${name.value}`);
+    }
+    (print.value as (x: unknown) => void)(ns["vars"]);
+    return createNull();
+  });
+
 const execPath = createString(Deno.execPath());
 
 export const define = (manager: EnvironmentManager) => {
   manager.create("global");
+  manager.extend("global", (env) => env.set("explore", explore(manager)));
   manager.extend("global", (env) => env.set("+", addition));
   manager.extend("global", (env) => env.set("%", modulo));
   manager.extend("global", (env) => env.set("-", minus));

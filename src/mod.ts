@@ -1,7 +1,7 @@
 // main.ts
 import { tokenize } from "./tokeniser.ts";
 import { parse } from "./parser.ts";
-import { Environment, environments, evaluate } from "./evaluator.ts";
+import { environments, evaluate } from "./evaluator.ts";
 import { LispVal } from "./types.ts";
 
 export class Sindarin {
@@ -29,7 +29,3 @@ export class Sindarin {
     environments.reset("global");
   }
 }
-
-// Example usage:
-// const lisp = new Sindarin();
-// const result = lisp.evaluate("(+ 1 2 3)");
