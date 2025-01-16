@@ -147,4 +147,23 @@
       (-each list func 0)
     )
   )
+  (defn join
+    (list sep)
+    (if (List/empty? list)
+      ""
+      (begin
+        (if (List/empty? (List/tail list))
+          (List/head list)
+          (String/combine
+            (List/head list)
+            sep
+            (join
+              (List/tail list)
+              sep
+            )
+          )
+        )
+      )
+    )
+  )
 )

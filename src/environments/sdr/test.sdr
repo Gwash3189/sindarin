@@ -1,0 +1,54 @@
+(ns Test
+  (def state #{:indent-level 1})
+  (defn -get-state
+    (key)
+    (if (Core/null? key)
+      state
+      (Hash/get state key)
+    )
+  )
+  (defn indents
+    ()
+    (String/repeat (-get-state :indent-level) "  ")
+  )
+  (defn describe
+    (msg f)
+    (begin
+      (pp (String/combine (String/repeat (-get-state :indent-level) "  ") msg))
+      (begin
+        (Hash/set state :indent-level (+ (-get-state :indent-level) 1))
+        (define result (f))
+        (Hash/set state :indent-level (- (-get-state :indent-level) 1))
+      )
+    )
+  )
+  (defn context (msg f) (describe msg f))
+  (defn it (msg f) (describe msg f))
+  (defn expect
+    (actual expected-fn)
+    (expected-fn #{:actual actual})
+  )
+  (defn to-equal
+    (expected)
+    (fn (assertion-state)
+      (begin
+        (def actual (Hash/get assertion-state :actual))
+        (define result (= actual expected))
+        (if result
+          (begin
+            (pp (String/combine (indents) "✅"))
+          )
+          (begin
+            (pp (String/combine (indents) "🚫"))
+          )
+        )
+      )
+    )
+  )
+  (defn to-be-false ()
+    (to-equal false)
+  )
+  (defn to-be-true ()
+    (to-equal true)
+  )
+)

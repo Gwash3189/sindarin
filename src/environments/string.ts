@@ -5,6 +5,7 @@ import {
   createList,
   createNull,
   createString,
+  isList,
   isNull,
   isString,
   LispVal,
@@ -55,9 +56,18 @@ const replace = createFunction(
   },
 );
 
+const combine = createFunction((...args: LispVal[]): LispVal => {
+  return createString(args.map((arg) => arg.value?.toString()).join(""));
+})
+
 export const define = (manager: EnvironmentManager) => {
   manager.create("String");
   manager.extend("String", (env) => env.set("split", split));
   manager.extend("String", (env) => env.set("replace", replace));
   manager.extend("String", (env) => env.set("trim", trim));
+  manager.extend("String", (env) => env.set("combine", combine));
+  manager.extend(
+    "String",
+    (env) => env.evaluate(`(require "./src/environments/sdr/string.sdr")`),
+  );
 };

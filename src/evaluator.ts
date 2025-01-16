@@ -29,6 +29,7 @@ import * as Integer from "./environments/integer.ts";
 import * as Boolean from "./environments/boolean.ts";
 import * as Range from "./environments/range.ts";
 import * as Global from "./environments/global.ts";
+import * as Test from "./environments/test.ts";
 
 // Environment class
 export class Environment {
@@ -518,6 +519,7 @@ function setupNamespaces() {
   Integer.define(environments);
   Boolean.define(environments);
   Range.define(environments);
+  Test.define(environments);
 }
 
 // Convenience function for evaluation

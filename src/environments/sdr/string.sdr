@@ -1,0 +1,15 @@
+(ns String
+  (defn repeat
+    (numb str)
+    (if (Integer/zero? numb)
+      str
+      (List/join
+        (List/map
+          (Range/create 0 numb)
+          (fn (_) str)
+        )
+        ""
+      )
+    )
+  )
+)

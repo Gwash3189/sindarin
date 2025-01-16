@@ -144,8 +144,13 @@ const print = createFunction((arg: LispVal): LispVal => {
   return arg;
 });
 
-const pp = createFunction((arg: LispVal): LispVal => {
-  console.log(arg.value);
+const pp = createFunction((arg: LispVal, data: LispVal): LispVal => {
+  if (data?.value) {
+    console.log(arg.value, data?.value);
+  } else {
+    console.log(arg.value);
+  }
+
   return arg;
 });
 

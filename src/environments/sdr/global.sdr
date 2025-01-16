@@ -2,12 +2,19 @@
 (defn >= (n x) (or (> n x) (= n x)))
 (defn <= (n x) (or (< n x) (= n x)))
 (defn assert
-  (x msg)
+  (x msg data)
   (if (not x)
     (if (Core/null? msg)
-      (pp "Assertion failed")
-      (pp msg)
+      (pp "%cAssertion failed" "color: red")
+      (pp msg data)
     )
     true
+  )
+)
+(defn unless
+  (x f-one f-two)
+  (if (not x)
+    (f)
+    (f-two)
   )
 )
