@@ -99,11 +99,11 @@ describe("List", () => {
     });
   });
 
-  describe("push", () => {
+  describe("prepend", () => {
     describe("when given an empty list and an item", () => {
       it("returns a list containing that item", () => {
         expect(lisp.evaluate(`
-            (List/push
+            (List/prepend
               (List/create)
               1
             )
@@ -115,7 +115,7 @@ describe("List", () => {
     describe("when given a list containing items and an item", () => {
       it("returns a list containing that item", () => {
         expect(lisp.evaluate(`
-            (List/push
+            (List/prepend
               (List/create 2 3)
               1
             )

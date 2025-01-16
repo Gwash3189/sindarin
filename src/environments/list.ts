@@ -82,21 +82,6 @@ const sort = createFunction((list: LispVal, sorter: LispVal): LispVal => {
     : createList(lst.sort((a, b) => func(a, b).value as number));
 });
 
-const push = createFunction((list: LispVal, value: LispVal): LispVal => {
-  if (isNull(list) || !isList(list)) {
-    return createError("List/push requires a list");
-  }
-  if (value === undefined) {
-    return createError("List/value requires a second parameter");
-  }
-
-  const lst = list.value;
-
-  lst.push(value);
-
-  return createList(lst);
-});
-
 export const define = (manager: EnvironmentManager) => {
   manager.create("List");
   manager.extend("List", (env) => env.set("create", create));

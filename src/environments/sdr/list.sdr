@@ -57,9 +57,9 @@
       )
     )
   )
-  (defn push
+  (defn prepend
     (list item)
-    (if (or (Core/null? list) (Core/null? item))
+    (if (Core/null? list)
       null
       (List/concat
         (List/create item)

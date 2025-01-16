@@ -32,7 +32,7 @@
         (Hash/set
           lists
           :left-list
-          (List/push
+          (List/prepend
             (Hash/get lists :left-list)
             (List/at number-tuple 0)
           )
@@ -40,7 +40,7 @@
         (Hash/set
           lists
           :right-list
-          (List/push
+          (List/prepend
             (Hash/get lists :right-list)
             (List/at
               number-tuple
