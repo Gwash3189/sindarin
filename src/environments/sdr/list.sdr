@@ -154,7 +154,7 @@
       (begin
         (if (List/empty? (List/tail list))
           (List/head list)
-          (String/combine
+          (String/join
             (List/head list)
             sep
             (join

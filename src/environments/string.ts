@@ -3,9 +3,7 @@ import {
   createError,
   createFunction,
   createList,
-  createNull,
   createString,
-  isList,
   isNull,
   isString,
   LispVal,
@@ -65,7 +63,7 @@ export const define = (manager: EnvironmentManager) => {
   manager.extend("String", (env) => env.set("split", split));
   manager.extend("String", (env) => env.set("replace", replace));
   manager.extend("String", (env) => env.set("trim", trim));
-  manager.extend("String", (env) => env.set("combine", combine));
+  manager.extend("String", (env) => env.set("join", combine));
   manager.extend(
     "String",
     (env) => env.evaluate(`(require "./src/environments/sdr/string.sdr")`),

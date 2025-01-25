@@ -212,6 +212,8 @@ export class Evaluator {
             return this.evaluateOr(rest, env);
           case "require":
             return this.evaluateRequire(rest, env);
+          case "defmacro":
+            return this.evaluateDefmacro(rest, env);
         }
       }
 
@@ -255,6 +257,28 @@ export class Evaluator {
       return nsEnv.get(func);
     }
     return env.get(symbolStr);
+  }
+
+  private evaluateDefmacro(args: LispVal[], env: Environment): LispVal {
+    if (args.length !== 2) {
+      throw new EvalError("Defmacro requires exactly two arguments");
+    }
+
+    const [name, value] = args;
+    if (!isSymbol(name)) {
+      throw new EvalError("First argument to defmacro must be a symbol");
+    }
+
+    const macro = this.evaluate(value, env);
+
+    if (!isFunction(macro)) {
+      throw new EvalError("Second argument to defmacro must be a function");
+    }
+
+    return env.set(name.value as string, createFunction((...args: LispVal[]) => {
+      const expanded = (macro.value as LispFunction)(...args);
+      return this.evaluate(expanded, env);
+    }));
   }
 
   private evaluateRequire(args: LispVal[], env: Environment): LispVal {

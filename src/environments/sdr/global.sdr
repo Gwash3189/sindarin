@@ -11,10 +11,3 @@
     true
   )
 )
-(defn unless
-  (x f-one f-two)
-  (if (not x)
-    (f)
-    (f-two)
-  )
-)

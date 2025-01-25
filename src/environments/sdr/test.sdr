@@ -14,11 +14,12 @@
   (defn describe
     (msg f)
     (begin
-      (pp (String/combine (String/repeat (-get-state :indent-level) "  ") msg))
+      (pp (String/join (String/repeat (-get-state :indent-level) "  ") msg))
       (begin
         (Hash/set state :indent-level (+ (-get-state :indent-level) 1))
         (define result (f))
         (Hash/set state :indent-level (- (-get-state :indent-level) 1))
+        result
       )
     )
   )
@@ -36,10 +37,10 @@
         (define result (= actual expected))
         (if result
           (begin
-            (pp (String/combine (indents) "✅"))
+            (pp (String/join (indents) "✅"))
           )
           (begin
-            (pp (String/combine (indents) "🚫"))
+            (pp (String/join (indents) "🚫"))
           )
         )
       )

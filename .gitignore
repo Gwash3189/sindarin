@@ -68,3 +68,6 @@ deno.lock
 
 # Deno compiled output
 *.js.map
+
+# sdr specific
+sdr

@@ -13,6 +13,7 @@ function main(): void {
   const args = parseArgs(Deno.args, {
     alias: {
       help: "h",
+      test: "t",
     },
   });
 
@@ -55,6 +56,11 @@ function main(): void {
 
   try {
     const result = new Sindarin().evaluate(contents);
+
+    if (args.test || args.file?.includes("spec") || (args._[0] as string)?.includes("spec")) {
+      return Deno.exit(0);
+    }
+
     console.log(result.value);
     return Deno.exit(0);
   } catch (error) {
